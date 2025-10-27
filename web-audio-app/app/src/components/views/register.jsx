@@ -1,9 +1,9 @@
-import { ConfirmRegistration } from '../buttons/confirming';
+import { ConfirmRegistration } from '../buttons/auth/confirm';
 import { GithubButton } from '../buttons/social';
 import '../../style/forms.css';
 import { useState } from 'react';
 
-export function RegisterForm() {
+export function RegisterForm({setActiveForm}) {
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -66,11 +66,17 @@ export function RegisterForm() {
           <h5>I have read the user agreement</h5>
 
         </form>
+        
         <ConfirmRegistration formData={formData} />
 
         <div>
           <h3>Or register with other social:</h3>
           <GithubButton />
+        </div>
+
+        <div>
+            <button onClick={() => setActiveForm(null)}>Back</button>
+            <button onClick={() => setActiveForm('login')}>Already have an account? Login</button>
         </div>
       </div>
     </>
