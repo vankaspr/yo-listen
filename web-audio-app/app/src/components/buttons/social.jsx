@@ -1,14 +1,7 @@
 export function GithubButton() {
+  const handleClick = () => {
+    alert('Github clicked!');
+  };
 
-    const handleClick = () => {
-        alert("Github clicked!")
-    }
-    
-    return (
-        <button 
-        onClick={handleClick}
-        >
-        Github
-        </button>
-    )
+  return <button onClick={handleClick}>Github</button>;
 }
