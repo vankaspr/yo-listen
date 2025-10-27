@@ -1,11 +1,18 @@
-
+import { RegisterButton } from './components/buttons/register'
+import { LoginButton } from './components/buttons/login';
 
 function App() {
+
   return (
-    <> 
-      <div>This is a home page</div>
+    <>
+      <div>Welcome to my app 👹</div>
+
+      <div>
+        <RegisterButton />
+        <LoginButton />
+      </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
