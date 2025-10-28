@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ConfirmLogin } from '../buttons/auth/confirm';
 import { GithubButton } from '../buttons/social';
-import '../../style/forms.css';
+import '../../style/login.css';
 
 export function LoginForm({ setActiveForm }) {
   const [formData, setFormData] = useState({
@@ -23,44 +23,57 @@ export function LoginForm({ setActiveForm }) {
 
   return (
     <>
-      <div>
+      <div className="main-div">
         <form onSubmit={handlSubmit}>
-          <label>Email or username:</label>
+          <label>Email or username</label>
           <input
             type="text"
-            placeholder="Enter your email or username"
+            placeholder="bruh@example.com or bruh1234"
             name="login"
             value={formData.login}
             onChange={handleChange}
           />
 
-          <label>Password:</label>
+          <label>Password</label>
           <input
             type="password"
-            placeholder="Enter your password"
+            placeholder="enter your password"
             name="password"
             value={formData.password}
             onChange={handleChange}
           />
         </form>
 
-        <button onClick={() => setActiveForm('forgot-password')}>
+        <a
+          className="link"
+          href="#forgot-password"
+          onClick={() => setActiveForm('forgot-password')}
+        >
           Forgot password?
-        </button>
+        </a>
 
         <ConfirmLogin formData={formData} />
 
-        <div>
-          <h3>Or login with other social:</h3>
+        <div className="github-div">
+          <p>
+            Do you have a GitHub account? Great! <br />
+            You can sign in with it:
+          </p>
           <GithubButton />
         </div>
 
-        <div>
-          <button onClick={() => setActiveForm(null)}>Back</button>
-          <button onClick={() => setActiveForm('register')}>
-            Don't have account? Register
-          </button>
-        </div>
+        <a
+          className="link"
+          href="#register"
+          onClick={() => setActiveForm('register')}
+        >
+          Don't have account? Register
+        </a>
+      </div>
+
+      {/* TODO: СДЕЛАТЬ ЧТО-ТО С ЭТОЙ КНОПКОЙ, как тебя ведать....*/}
+      <div className='back-div'>
+        <a href="#home" onClick={() => setActiveForm(null)}>← Back to Home</a>
       </div>
     </>
   );
