@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import RedirectResponse
 from typing import Annotated
 
@@ -43,8 +43,8 @@ async def register(
     Registrate new user and send verification token to email.
     """
     
-    user = await user_service.create_user(user_data=user_data)
-    return user 
+    return await user_service.create_user(user_data=user_data)
+    
 
 
 @router.post("/login")
@@ -175,21 +175,23 @@ async def refresh(
         "token_type": "bearer",
     }
 
-@router.get("/github", include_in_schema=False)
-async def login_with_github():
-    return RedirectResponse(github_auth_url)
 
-
-@router.get("/github/docs")
-async def login_with_github():
+@router.get("/github")
+async def login_with_github(
+    request: Request,
+    url: bool = Query(False)
+    
+):
     """ 
     Get GitHub OAuth URL
     """
     
-    return {
+    if url:
+        return {
             "message": "Visit the URL to login with GitHub",
             "url": github_auth_url
         }
+    return RedirectResponse(github_auth_url)
     
 
 @router.get("/github/callback")
@@ -204,4 +206,5 @@ async def github_callback(
     Handle GitHub OAuth callback
     """
     
+    # TODO: frontend url -> redirect to profile or home page 
     return await oauth_service.authenticate(code)
