@@ -1,9 +1,10 @@
 import { ConfirmRegistration } from '../buttons/auth/confirm';
 import { GithubButton } from '../buttons/social';
-import '../../style/forms.css';
+import '../../style/register.css';
+import '../../style/login.css';
 import { useState } from 'react';
 
-export function RegisterForm({setActiveForm}) {
+export function RegisterForm({ setActiveForm }) {
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -19,15 +20,15 @@ export function RegisterForm({setActiveForm}) {
     }));
   };
 
-  const handlSubmit = (e) => {
+  const handlSubmit = e => {
     e.preventDefault();
   };
 
   return (
     <>
-      <div>
-        <form onSubmit={handlSubmit}>
-          <label>Email: </label>
+      <div className="main-register-div">
+        <form className="form-register" onSubmit={handlSubmit}>
+          <label>Email </label>
           <input
             type="text"
             placeholder="Enter your email"
@@ -36,7 +37,7 @@ export function RegisterForm({setActiveForm}) {
             onChange={handleChange}
           />
 
-          <label>Username: </label>
+          <label>Create unique username </label>
           <input
             type="text"
             placeholder="Enter your username"
@@ -45,7 +46,7 @@ export function RegisterForm({setActiveForm}) {
             onChange={handleChange}
           />
 
-          <label>Password: </label>
+          <label>Password </label>
           <input
             type="password"
             placeholder="Create password"
@@ -53,8 +54,13 @@ export function RegisterForm({setActiveForm}) {
             value={formData.password}
             onChange={handleChange}
           />
+          <span>
+            The password must be at least 8 characters long and contain at least
+            one number, one uppercase letter, and one special character. Please
+            do not use your personal information as your password.
+          </span>
 
-          <label>Repeat password: </label>
+          <label>Repeat password </label>
           <input
             type="password"
             placeholder="Repeat password"
@@ -63,21 +69,36 @@ export function RegisterForm({setActiveForm}) {
             onChange={handleChange}
           />
 
-          <h5>I have read the user agreement</h5>
-
+          <div className="checkbox-div">
+            <input type="checkbox" />
+            <span>
+              I have read and agree to the{' '}
+              <a className="link" href="#terms-of-service">Terms of Service</a>
+            </span>
+          </div>
         </form>
-        
+
         <ConfirmRegistration formData={formData} />
 
-        <div>
-          <h3>Or register with other social:</h3>
+        <div className="github-div">
+          <p>
+            Do you have a GitHub account? Great! <br />
+            You can sign in with it!
+          </p>
           <GithubButton />
         </div>
-
-        <div>
-            <button onClick={() => setActiveForm(null)}>Back</button>
-            <button onClick={() => setActiveForm('login')}>Already have an account? Login</button>
-        </div>
+        <a
+          className="link"
+          href="#register"
+          onClick={() => setActiveForm('login')}
+        >
+          Already have an account? Login.
+        </a>
+      </div>
+      <div className="back-div">
+        <a href="#home" onClick={() => setActiveForm(null)}>
+          ← Back to Home
+        </a>
       </div>
     </>
   );
