@@ -24,7 +24,7 @@ export function LoginForm({ setActiveForm }) {
   return (
     <>
       <div className="main-div">
-        <form onSubmit={handlSubmit}>
+        <form className="form" onSubmit={handlSubmit}>
           <label>Email or username</label>
           <input
             type="text"
@@ -57,7 +57,7 @@ export function LoginForm({ setActiveForm }) {
         <div className="github-div">
           <p>
             Do you have a GitHub account? Great! <br />
-            You can sign in with it:
+            You can sign in with it!
           </p>
           <GithubButton />
         </div>
@@ -67,11 +67,10 @@ export function LoginForm({ setActiveForm }) {
           href="#register"
           onClick={() => setActiveForm('register')}
         >
-          Don't have account? Register
+          Don't have account? Register.
         </a>
       </div>
 
-      {/* TODO: СДЕЛАТЬ ЧТО-ТО С ЭТОЙ КНОПКОЙ, как тебя ведать....*/}
       <div className='back-div'>
         <a href="#home" onClick={() => setActiveForm(null)}>← Back to Home</a>
       </div>
