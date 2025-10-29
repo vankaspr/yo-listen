@@ -3,7 +3,7 @@ import { ConfirmLogin } from '../buttons/auth/confirm';
 import { GithubButton } from '../buttons/social';
 import '../../style/auth/login.css';
 
-export function LoginForm({ setActiveForm }) {
+export function LoginForm({ setActiveForm, onLoginSuccess }) {
   const [formData, setFormData] = useState({
     login: '',
     password: '',
@@ -52,7 +52,10 @@ export function LoginForm({ setActiveForm }) {
           Forgot password?
         </a>
 
-        <ConfirmLogin formData={formData} />
+        <ConfirmLogin 
+        formData={formData} 
+        onLoginSuccess={onLoginSuccess}
+        />
 
         <div className="github-div">
           <p>
