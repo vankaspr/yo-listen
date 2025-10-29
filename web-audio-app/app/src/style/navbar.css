@@ -1,8 +1,10 @@
 nav {
-    border-radius: 16px;;
+    border-radius: 0px;
     background-color: #dc97a5;
-    color: #845747;
+    width: 100%;
 }
+
+
 
 .text-div h4{
     color: #b83556;
@@ -11,6 +13,10 @@ nav {
 a {
     text-decoration: none;
     color: #55768c;
+}
+
+a:hover {
+    color:#b83556;
 }
 
 ul {
@@ -22,6 +28,27 @@ ul {
     list-style: none;
     padding: 0;
     
+}
+
+ul li {
+    color:#845747;
+    transition: all 0.3s ease;
+}
+
+ul li:hover {
+    color:#b83556;
+    transform: translateY(-2px);
+}
+
+ul li.active {
+    position: relative;
+    color: #b83556;
+    padding: 8px 20px;
+    text-align: center;
+    justify-content: center;
+    border-radius: 16px;
+    background-color: #faded2;
+    transform: translateY(-2px);
 }
 
 
@@ -55,6 +82,7 @@ ul {
     padding: 0;
     margin: 0;
     width: 100%;
+    transition: transform 0.2s;
 }
 
 .dropdown-content button {
@@ -71,3 +99,4 @@ ul {
     transform: scale(1.05);
     color:#55768c;
 }
+
