@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import '../../style/forms.css';
+import '../../style/forgot-password.css';
+import '../../style/login.css';
 import { ForgotPasswordRequest } from '../buttons/auth/confirm';
 
 export function ForgotPasswordForm({setActiveForm}) {
@@ -21,8 +22,8 @@ export function ForgotPasswordForm({setActiveForm}) {
 
   return (
     <>
-      <div>
-        <form onSubmit={handlSubmit}>
+      <div className='main-div-forgot'>
+        <form className="form" onSubmit={handlSubmit}>
           <label>Enter your email:</label>
           <input
             type="email"
@@ -35,7 +36,8 @@ export function ForgotPasswordForm({setActiveForm}) {
 
         <ForgotPasswordRequest formData={formData} />
 
-        <button onClick={() => setActiveForm('login')}>Back to Login</button>
+        <a href="#login" className='link'
+        onClick={() => setActiveForm('login')}>← Back to Login</a>
       </div>
     </>
   );
