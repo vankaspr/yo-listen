@@ -1,7 +1,7 @@
 import { ConfirmRegistration } from '../buttons/auth/confirm';
 import { GithubButton } from '../buttons/social';
-import '../../style/register.css';
-import '../../style/login.css';
+import '../../style/auth/register.css';
+import '../../style/auth/login.css';
 import { useState } from 'react';
 
 export function RegisterForm({ setActiveForm }) {
@@ -69,6 +69,7 @@ export function RegisterForm({ setActiveForm }) {
             onChange={handleChange}
           />
 
+          {/* TODO: не пускать пока не примут */}
           <div className="checkbox-div">
             <input type="checkbox" />
             <span>
@@ -78,6 +79,7 @@ export function RegisterForm({ setActiveForm }) {
           </div>
         </form>
 
+        {/*TODO: визуальная обработка ошибок */}
         <ConfirmRegistration formData={formData} />
 
         <div className="github-div">

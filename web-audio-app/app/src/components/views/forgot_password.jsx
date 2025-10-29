@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import '../../style/forgot-password.css';
-import '../../style/login.css';
+import '../../style/authforgot-password.css';
+import '../../style/authlogin.css';
 import { ForgotPasswordRequest } from '../buttons/auth/confirm';
 
 export function ForgotPasswordForm({setActiveForm}) {

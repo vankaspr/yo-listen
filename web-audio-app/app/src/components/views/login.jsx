@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ConfirmLogin } from '../buttons/auth/confirm';
 import { GithubButton } from '../buttons/social';
-import '../../style/login.css';
+import '../../style/auth/login.css';
 
 export function LoginForm({ setActiveForm }) {
   const [formData, setFormData] = useState({
