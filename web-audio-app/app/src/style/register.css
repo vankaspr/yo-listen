@@ -19,12 +19,15 @@
     align-items: center;
     gap: 10px;
 }
-
+.form-register label {
+    color:#845747;
+    font-size: 18px;
+}
 .form-register input{
-    padding: 12px;
+    padding: 10px;
     text-align: start;
     font-size: 16px;
-    width: 80%;
+    width: 70%;
     border-radius: 16px;
     border: 2px solid #845747;
 }
@@ -49,4 +52,5 @@
 }
 .checkbox-div input {
     width: 18px;
+    accent-color: #b83556 ;
 }
