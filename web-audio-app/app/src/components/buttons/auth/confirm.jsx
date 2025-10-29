@@ -1,4 +1,5 @@
 import { API_ENDPOINTS } from '../../../api/path';
+import { useUser } from '../../../hooks/user';
 
 export function ConfirmRegistration({ formData }) {
   const handleClick = async () => {
@@ -43,7 +44,8 @@ export function ConfirmRegistration({ formData }) {
   return <button onClick={handleClick}>Continue</button>;
 }
 
-export function ConfirmLogin({ formData }) {
+export function ConfirmLogin({ formData, onLoginSuccess }) {
+  const { getCurrentUser, loading, error } = useUser();
   const handleClick = async () => {
     try {
       // check if all field wad filled:
@@ -63,20 +65,30 @@ export function ConfirmLogin({ formData }) {
       });
 
       if (response.ok) {
-        alert('Login succesfull!');
-        // window.location.href -> profile (/api/user/me)
-      } else {
-        alert('Error. Something was wrong...');
+        const data = await response.json();
+        const accessToken = data.access_token || data.token;
+
+        if (!accessToken) {
+          throw new Error('No access token received');
+        }
+
+        localStorage.setItem('access_token', accessToken);
+        const userData = await getCurrentUser(accessToken);
+        onLoginSuccess(userData);
       }
 
       console.log('Login succesfull: ', response.data);
     } catch (error) {
       console.log('Error response:', error.response?.data);
+      alert(error.message || 'Login failed. Please try again.');
     }
   };
   return (
     <>
-      <button onClick={handleClick}>Continue</button>
+      <button onClick={handleClick} disabled={loading}>
+        {loading ? 'Loading...' : 'Continue'}
+      </button>
+      {error && <p className="error">{error}</p>}
     </>
   );
 }
@@ -85,23 +97,24 @@ export function ForgotPasswordRequest({ formData }) {
   const handleClick = async () => {
     try {
       if (!formData.email) {
-        alert("Please fill all fields");
+        alert('Please fill all fields');
         return;
       }
-
 
       const response = await fetch(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({email: formData.email})
-    });
+        body: JSON.stringify({ email: formData.email }),
+      });
 
-    if (response.ok) {
-      // window.location.href -> login 
-      alert("We've sent you an email so you can confirm your account.Please check it and follow the instructions in the email.")
-    } else {
-      alert('Error. Something was wrong...');
-    }
+      if (response.ok) {
+        // window.location.href -> login
+        alert(
+          "We've sent you an email so you can confirm your account.Please check it and follow the instructions in the email."
+        );
+      } else {
+        alert('Error. Something was wrong...');
+      }
     } catch (error) {
       console.log('Error response:', error.response?.data);
     }
