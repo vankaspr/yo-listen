@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from typing import Annotated
 from core.database.models import User
 from core.services.profile import ProfileService
 from core.dependency.user import get_current_user
 from core.dependency.services import get_profile_service
 from core.config import settings
+from core.database.schemas.profile import BioUpdate, AvatarUpdate
 
 router = APIRouter(
     prefix=settings.api.user,
@@ -40,7 +41,7 @@ async def profile(
         Depends(get_profile_service),
     ]
 ):
-    
+    #profile = await profile_service.get_or_create_profile(user=user)
     profile = await profile_service.get_user_profile(user.id)
     
     response_data = {
@@ -69,3 +70,38 @@ async def profile(
         **response_data
         
     }
+    
+
+
+@router.patch("/me/profile/bio")
+async def update_bio(
+    update: BioUpdate,
+    user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    profile_service: Annotated[
+        ProfileService,
+        Depends(get_profile_service),
+    ],
+):
+    
+    return await profile_service.update_bio(user.id, update.bio)
+
+
+@router.patch("/me/profile/avatar")
+async def update_avatar(
+    update: AvatarUpdate,
+    user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    profile_service: Annotated[
+        ProfileService,
+        Depends(get_profile_service),
+    ],
+):
+    
+    return await profile_service.update_avatar(user.id, update.avatar)
+
+
