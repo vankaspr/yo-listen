@@ -42,23 +42,50 @@ class ProfileService:
                 or await self.create_profile(user=user))
         
     
-    #async def update_profile(
-    #    self,
-    #    user_id: int,
-    #    update_data: dict,
-    #) -> Profile:
-    #    """ 
-    #    Update only an existing profile
-    #    """
-    #    
-    #    profile = await self.get_user_profile(user_id=user_id)
-    #    if not profile:
-    #        raise ValueError("Profile not found")
-    #    
-    #    for filed, value in update_data.items():
-    #        if hasattr(profile, filed):
-    #            setattr(profile, filed, value)
-    #            
-    #    await self.session.commit()
-    #    await self.session.refresh(profile)
-    #    return profile
+    async def update_profile(
+        self,
+        user_id: int,
+        update_data: dict,
+    ) -> Profile:
+        """ 
+        Update only an existing profile
+        """
+        
+        profile = await self.get_user_profile(user_id=user_id)
+        if not profile:
+            raise ValueError("Profile not found")
+        
+        for filed, value in update_data.items():
+            if hasattr(profile, filed):
+                setattr(profile, filed, value)
+                
+        await self.session.commit()
+        await self.session.refresh(profile)
+        return profile
+    
+    async def update_bio(
+        self,
+        user_id: int,
+        bio: str,
+    ) -> Profile:
+        """ Update user bio"""
+        return await self.update_profile(user_id=user_id,update_data={"bio": bio})
+    
+    async def update_avatar(
+    self,
+    user_id: int,
+    avatar: str,
+    ) -> Profile:
+        """ Update user avatar"""
+        return await self.update_profile(user_id=user_id,update_data={"avatar": avatar})
+
+
+    async def update_theme(
+    self,
+    user_id: int,
+    theme: str,
+    ) -> Profile:
+        """ Update user theme"""
+        return await self.update_profile(user_id=user_id,update_data={"theme": theme})
+
+    
