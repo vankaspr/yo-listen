@@ -55,25 +55,24 @@ export function Profile({ currentUser }) {
     <>
       {profileData && (
         <>
-          <div className="card-container">
+          <div>
 
-            <div className="profile-container">
-              <div className="user-info-container ">
-                <div className='user-info'>
+            <di >
+              <div>
+                <div>
                     <p>Email:{profileData.email}</p>
                     <p>Username: {profileData.username}</p>
                     <p>Verified: {profileData.is_verified}</p>
                     <p>Member sinse: {profileData.created_at}</p>
                 </div>
-                <div className="avatar">
+                <div>
                   {profileData.avatar ? (
                     <img
                       src={profileData.avatar}
                       alt="User avatar"
-                      className="avatar-image"
                     />
                   ) : (
-                    <div className="avatar-placeholder"></div>
+                    <div>Avatar opso...sybai sybai </div>
                   )}
                   {/*TODO: достать аватарку и подгонять под размеры если нужно */}
                 </div>
@@ -84,13 +83,7 @@ export function Profile({ currentUser }) {
                   <p>{profileData.bio}</p>
                 ) : (
                   <p>
-                    Это место для описания вашего профиля! Расскажите что-то
-                    интересное о себе. Не бойтесь быть красноречивым, большие
-                    тексты приветствуются, это всего лишь пара строчек в css
-                    файлике. Используйте свои любимые эмодзи, расскажите свой
-                    любимый анекдот или напишите строчку вашей любимой песни.
-                    Или напишите какую-нибудь ерунду, давай полосочка появись,
-                    родная 🫩👅 Come to daddy 🥸 GOOD GIRL I SEE U
+                    Это место для описания вашего профиля!
                   </p>
                 )}
               </div>
@@ -98,7 +91,7 @@ export function Profile({ currentUser }) {
                 Profile: {profileData.message} for {currentUser.username}
               </p>
               <p>Theme: {profileData.theme}</p>
-            </div>
+            </di>
           </div>
         </>
       )}
