@@ -15,6 +15,7 @@ export const API_ENDPOINTS = {
 
     USER: {
         ME: `${API_BASE_URL}/user/me`,
+        PROFILE: `${API_BASE_URL}/user/me/profile`,
     },
 
     ADMIN: {
