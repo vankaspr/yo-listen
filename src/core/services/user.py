@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from core.database.schemas.user import UserCreate
-from core.database.models import User, RefreshToken
+from core.database.models import User, RefreshToken, Profile
 
 from utilities.security import hash_password, verify_password
 from utilities.jwt_token import create_jwt_token, verify_token
@@ -237,6 +237,11 @@ class UserService:
                 raise auth.UserNotFound
 
             user.is_verified = True
+            
+            # create profile 
+            profile = Profile(user_id=user.id)
+            self.session.add(profile)
+                
             await self.session.commit()
         
             # sending confirm email about verification:
@@ -267,17 +272,18 @@ class UserService:
         - must contain at least one digit
         - must contain at least one special character
         """
-        
-        if len(password) < 8:
-            raise auth.ErrorPasswordValidation("Password should be at least 8 characters long")
-        if password.isdigit():
-            raise auth.ErrorPasswordValidation("Password should not contain only digits")
-        if not re.search(r"[A-Z]", password):
-            raise auth.ErrorPasswordValidation("Password must contain at least one uppercase letter")
-        if not re.search(r"[0-9]", password):
-            raise auth.ErrorPasswordValidation("Password must contain at least one digit")
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
-            raise auth.ErrorPasswordValidation("Password must contain at least one special character")
+        pass
+    
+        #if len(password) < 8:
+        #    raise auth.ErrorPasswordValidation("Password should be at least 8 characters long")
+        #if password.isdigit():
+        #    raise auth.ErrorPasswordValidation("Password should not contain only digits")
+        #if not re.search(r"[A-Z]", password):
+        #    raise auth.ErrorPasswordValidation("Password must contain at least one uppercase letter")
+        #if not re.search(r"[0-9]", password):
+        #    raise auth.ErrorPasswordValidation("Password must contain at least one digit")
+        #if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        #   raise auth.ErrorPasswordValidation("Password must contain at least one special character")
     
     
     async def forgot_password(
