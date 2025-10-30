@@ -96,15 +96,16 @@ export function Navbar({
                 <a
                   className={activeBar === 'profile' ? 'active' : ''}
                   href="#profile"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveBar('profile');
+                  }}
                 >
                   👤 {currentUser?.username} ! Profile
                 </a>
                 {isProfileDropdownOpen && (
                   <ul className="dropdown-content">
                     <div>
-                      <li>
-                        <button>View Profile</button>
-                      </li>
                       <li>
                         <button>Settings</button>
                       </li>
