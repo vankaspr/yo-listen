@@ -4,6 +4,7 @@ import { LoginForm } from './components/views/login';
 import { ForgotPasswordForm } from './components/views/forgot_password';
 import { Navbar } from './components/navbar';
 import { useUser } from './hooks/user';
+import { Profile } from './components/profile/card';
 
 function App() {
   const [activeForm, setActiveForm] = useState(null);
@@ -37,7 +38,7 @@ function App() {
         setActiveBar={setActiveBar}
       />
 
-      {/* ToDO: элемент приветствия будет только для гостевых пользователей*/}
+      
       {!isAuthenticated ? (
         <>
           <div>Welcome to my app 👹</div>
@@ -63,8 +64,11 @@ function App() {
         </>
       ) : (
         <>
-          <div>Welcome back, {currentUser?.username}!</div>
-          {/* ToDO: элемент приветствия будет только для авторизованных пользователей*/}
+          
+          {/* после авторизации на этом месте профиль пользователя*/}
+          {isAuthenticated && activeBar === 'profile' && (
+            <Profile currentUser={currentUser} />
+          )}
         </>
       )}
     </>
