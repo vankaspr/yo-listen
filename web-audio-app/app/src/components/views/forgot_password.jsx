@@ -27,7 +27,7 @@ export function ForgotPasswordForm({setActiveForm}) {
           <label>Enter your email:</label>
           <input
             type="email"
-            placeholder="Enter your email or username"
+            placeholder="Enter your email"
             name="email"
             value={formData.email}
             onChange={handleChange}
