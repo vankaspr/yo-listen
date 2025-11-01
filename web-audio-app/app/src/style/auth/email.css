@@ -1,0 +1,42 @@
+.email-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    gap: 20px;
+    background-color: white;
+    width: 500px;
+    height: 400px;
+    margin: 40px auto;
+    box-shadow: 0 4px 20px #845747;
+    border-radius: 16px;
+}
+
+.text-email-div {
+    text-align: center;
+    color:#845747;
+    margin: 20px;
+    color: #b83556;
+}
+
+
+
+.timer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
+    height: 50px;
+    text-align: center;
+    padding: 5px;
+    background-color: #845747;
+    border-radius: 16px;
+    color:  white;
+    letter-spacing: 3px;
+
+}
+
+
+
+
