@@ -1,5 +1,6 @@
 import { ConfirmRegistration } from '../buttons/auth/confirm';
 import { GithubButton } from '../buttons/social';
+import { EmailSentMessage } from '../buttons/auth/email';
 import '../../style/auth/register.css';
 import '../../style/auth/login.css';
 import { useState } from 'react';
@@ -12,12 +13,46 @@ export function RegisterForm({ setActiveForm }) {
     passwordConfirm: '',
   });
 
+  const [errors, setErrors] = useState({});
+  const [isTermsAccepted, setIsTermsAccepted] = useState(false);
+  const [isRegistrationComplete, setIsRegistrationComplete] = useState(false);
+
+  const handleSuccess = () => {
+    setIsRegistrationComplete(true);
+  };
+
+  if (isRegistrationComplete) {
+    // 🫸 TODO: компонент уведомления об отправке письма 
+    return <EmailSentMessage email={formData.email} />;
+  }
+
   const handleChange = e => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
+
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleTermsChange = e => {
+    setIsTermsAccepted(e.target.checked);
+    if (errors.terms) {
+      setErrors([
+        prev => {
+          const newErrors = { ...prev };
+          delete newErrors.terms;
+          return newErrors;
+        },
+      ]);
+    }
   };
 
   const handlSubmit = e => {
@@ -26,80 +61,118 @@ export function RegisterForm({ setActiveForm }) {
 
   return (
     <>
-      <div className="main-register-div">
-        <form className="form-register" onSubmit={handlSubmit}>
-          <label>Email </label>
-          <input
-            type="text"
-            placeholder="Enter your email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
+      <div className="form-errors-wrapper">
+        <div className="main-register-div">
+          <form className="form-register" onSubmit={handlSubmit}>
+            <label>Почта </label>
+            <input
+              type="text"
+              placeholder="введите почту"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+            />
 
-          <label>Create unique username </label>
-          <input
-            type="text"
-            placeholder="Enter your username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-          />
+            <label>Придумайте уникальный никнейм </label>
+            <input
+              type="text"
+              placeholder="введите никнейм"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+            />
 
-          <label>Password </label>
-          <input
-            type="password"
-            placeholder="Create password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-          />
-          <span>
-            The password must be at least 8 characters long and contain at least
-            one number, one uppercase letter, and one special character. Please
-            do not use your personal information as your password.
-          </span>
-
-          <label>Repeat password </label>
-          <input
-            type="password"
-            placeholder="Repeat password"
-            name="passwordConfirm"
-            value={formData.passwordConfirm}
-            onChange={handleChange}
-          />
-
-          {/* TODO: не пускать пока не примут */}
-          <div className="checkbox-div">
-            <input type="checkbox" />
+            <label>Придумайте пароль </label>
+            <input
+              type="password"
+              placeholder="введите пароль"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+            />
             <span>
-              I have read and agree to the{' '}
-              <a className="link" href="#terms-of-service">Terms of Service</a>
+              Пароль должен быть не менее 8 символов и содержать хотя бы одну
+              цифру, одну заглавную букву и один специальный символ.
             </span>
+
+            <label>Повторите пароль</label>
+            <input
+              type="password"
+              placeholder="введите пароль"
+              name="passwordConfirm"
+              value={formData.passwordConfirm}
+              onChange={handleChange}
+            />
+
+            {/* checkbox terms of privicy */}
+            <div className="checkbox-div">
+              <input
+                type="checkbox"
+                checked={isTermsAccepted}
+                onChange={handleTermsChange}
+              />
+              <span>
+                Я прочитал(а){' '}
+                <a className="link" href="#terms-of-service">
+                  пользовательское соглашение
+                </a>
+              </span>
+            </div>
+          </form>
+
+          {/*TODO: визуальная обработка ошибок */}
+          <ConfirmRegistration
+            formData={formData}
+            setErrors={setErrors}
+            isTermsAccepted={isTermsAccepted}
+            onSuccess={handleSuccess}
+          />
+
+          <div className="github-div">
+            <p>
+              У вас есть аккаунт на GitHub? Отлично! <br />
+              Вы можете зарегистрироваться с ним:
+            </p>
+            <GithubButton />
           </div>
-        </form>
-
-        {/*TODO: визуальная обработка ошибок */}
-        <ConfirmRegistration formData={formData} />
-
-        <div className="github-div">
-          <p>
-            Do you have a GitHub account? Great! <br />
-            You can sign in with it!
-          </p>
-          <GithubButton />
+          <a
+            className="link"
+            href="#register"
+            onClick={() => setActiveForm('login')}
+          >
+            Уже есть аккаунт? Залогиньтесь.
+          </a>
         </div>
-        <a
-          className="link"
-          href="#register"
-          onClick={() => setActiveForm('login')}
-        >
-          Already have an account? Login.
-        </a>
+
+        {Object.keys(errors).length > 0 && (
+          <div className="error-container">
+            {errors.email && (
+              <div className="error-message">📧 {errors.email}</div>
+            )}
+            {errors.username && (
+              <div className="error-message">👤 {errors.username}</div>
+            )}
+            {errors.password && (
+              <div className="error-message">🔒 {errors.password}</div>
+            )}
+            {errors.passwordConfirm && (
+              <div className="error-message">🔒 {errors.passwordConfirm}</div>
+            )}
+            {errors.terms && (
+              <div className="error-message">📄 {errors.terms}</div>
+            )}
+            {errors.submit && (
+              <div className="error-message submit-error">
+                ⚠️ {errors.submit}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
       <div className="back-div">
         <a href="#home" onClick={() => setActiveForm(null)}>
-          ← Back to Home
+          ← Вернуться на Главную страницу
         </a>
       </div>
     </>
