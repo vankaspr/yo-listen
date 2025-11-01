@@ -1,21 +1,58 @@
+import { useState } from 'react';
 import { API_ENDPOINTS } from '../../../api/path';
 import { useUser } from '../../../hooks/user';
 
-export function ConfirmRegistration({ formData }) {
+export function ConfirmRegistration({
+  formData,
+  isTermsAccepted,
+  setErrors,
+  onSuccess,
+}) {
+  const [isLoading, setIsLoading] = useState(false);
   const handleClick = async () => {
+
+    const newErrors = {};
+
+    // check if all field wad filled:
+    if (!formData.email) newErrors.email = 'Заполните поле почты!';
+    if (!formData.username) newErrors.username = 'Заполните поле никнейм!';
+    if (!formData.password) newErrors.password = 'Заполните поле пароля!';
+    if (!formData.passwordConfirm)
+      newErrors.passwordConfirm = 'Заполните поле подтверждения пароля!';
+
+    // password validation:
+    if (formData.password != formData.passwordConfirm) {
+      newErrors.passwordConfirm = 'Пароли не совпадают';
+    }
+
+    // check if click on checkbox
+    if (!isTermsAccepted) {
+      newErrors.terms =
+        'Чтобы продолжить регистрацию необходимо принять пользовательское соглашение';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+
+      const shakeFields = Object.keys(newErrors);
+      shakeFields.forEach(field => {
+        const input = document.querySelector(`[name="${field}"]`);
+        if (input) {
+          input.classList.add('shake-animation');
+          setTimeout(() => input.classList.remove('shake-animation'), 500);
+        }
+      });
+
+      return;
+    }
+
+    await sendRegistrationRequest();
+  };
+
+  const sendRegistrationRequest = async () => {
+    setIsLoading(true);
+
     try {
-      // check if all field wad filled:
-      if (!formData.email || !formData.password || !formData.username) {
-        alert('Please fill all fields');
-        return;
-      }
-
-      // password validation:
-      if (formData.password != formData.passwordConfirm) {
-        alert("Passwords don't match");
-        return;
-      }
-
       const response = await fetch(API_ENDPOINTS.AUTH.REGISTER, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -26,22 +63,37 @@ export function ConfirmRegistration({ formData }) {
         }),
       });
 
-      // here will be real notifications in the form of components:
+      // будет отправлено письмо на почту + таймер
       if (response.ok) {
-        alert(
-          "We've sent you an email so you can confirm your account.Please check it and follow the instructions in the email."
-        );
+        onSuccess();
       } else {
-        alert('Error. Something was wrong...');
+        const errorData = await response.json();
+        setErrors({
+          submit: errorData.message || 'Произошла ошибка при регистрации, возможно никнейм уже занят',
+        });
       }
-
-      console.log('Registration succesfull: ', response.data);
+      console.log('Успешно зарегистрировались!: ', response.data);
     } catch (error) {
-      console.log('Error response:', error.response?.data);
+      console.log('Ошибка:', error);
+      setErrors({
+        submit: 'Ошибка сети. Поробуйте ещё раз.',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return <button onClick={handleClick}>Continue</button>;
+
+  return (
+    
+    <button 
+    onClick={handleClick}
+    disabled={isLoading}
+    >
+      {isLoading ? 'Регистрируем...' : 'Продолжить'}
+    </button>
+    
+  );
 }
 
 export function ConfirmLogin({ formData, onLoginSuccess }) {
@@ -86,7 +138,7 @@ export function ConfirmLogin({ formData, onLoginSuccess }) {
   return (
     <>
       <button onClick={handleClick} disabled={loading}>
-        {loading ? 'Loading...' : 'Continue'}
+        {loading ? 'Обрабатываем...' : 'Продолжить'}
       </button>
       {error && <p className="error">{error}</p>}
     </>
@@ -121,7 +173,7 @@ export function ForgotPasswordRequest({ formData }) {
   };
   return (
     <>
-      <button onClick={handleClick}>Continue</button>
+      <button onClick={handleClick}>Продолжить</button>
     </>
   );
 }
