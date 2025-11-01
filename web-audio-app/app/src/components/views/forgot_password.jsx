@@ -24,10 +24,10 @@ export function ForgotPasswordForm({setActiveForm}) {
     <>
       <div className='main-div-forgot'>
         <form className="form" onSubmit={handlSubmit}>
-          <label>Enter your email:</label>
+          <label>Введите вашу почту</label>
           <input
             type="email"
-            placeholder="Enter your email"
+            placeholder="введите почту"
             name="email"
             value={formData.email}
             onChange={handleChange}
@@ -37,7 +37,7 @@ export function ForgotPasswordForm({setActiveForm}) {
         <ForgotPasswordRequest formData={formData} />
 
         <a href="#login" className='link'
-        onClick={() => setActiveForm('login')}>← Back to Login</a>
+        onClick={() => setActiveForm('login')}>← Вернуться к Логину</a>
       </div>
     </>
   );

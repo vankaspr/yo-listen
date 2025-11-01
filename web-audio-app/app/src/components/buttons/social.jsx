@@ -9,5 +9,5 @@ export function GithubButton() {
     }
   };
 
-  return <button onClick={handleClick}>Login with GitHub</button>;
+  return <button onClick={handleClick}>Войти через GitHub</button>;
 }

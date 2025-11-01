@@ -24,27 +24,27 @@ export function Navbar({
         <div>
           <ul>
             <div className="text-div">
-              <h4>Yo! Listen</h4>
+              <h4>Йо! Слушай</h4>
             </div>
 
             <li
               className={activeBar === 'home' ? 'active' : ''}
               onClick={() => handleBarChange('home')}
             >
-              Home
+              Главная
             </li>
 
             <li
               className={activeBar === 'more' ? 'active' : ''}
               onClick={() => handleBarChange('more')}
             >
-              News
+              Новости
             </li>
             <li
               className={activeBar === 'recomendation' ? 'active' : ''}
               onClick={() => handleBarChange('recomendation')}
             >
-              Recomendation
+              Рекомендации
             </li>
 
             {/* Если пользователь авторизован, то вместо этого будет Профиль*/}
@@ -55,7 +55,7 @@ export function Navbar({
                 onMouseLeave={() => setIsJoinDropdownOpen(false)}
               >
                 <a className={activeBar === 'join' ? 'active' : ''} href="join">
-                  Join us
+                  Присоединиться
                 </a>
                 {isJoinDropdownOpen && (
                   <ul className="dropdown-content">
@@ -68,7 +68,7 @@ export function Navbar({
                             setActiveBar('join');
                           }}
                         >
-                          Sign in
+                          Логин
                         </button>
                       </li>
 
@@ -80,7 +80,7 @@ export function Navbar({
                             setActiveBar('join');
                           }}
                         >
-                          Sign up
+                          Регистрация
                         </button>
                       </li>
                     </div>
@@ -107,16 +107,16 @@ export function Navbar({
                   <ul className="dropdown-content">
                     <div>
                       <li>
-                        <button>Settings</button>
+                        <button>Настройки</button>
                       </li>
                       <li>
-                        <button>Listen!</button>
+                        <button>Слушаем!</button>
                       </li>
                       <li>
-                        <button>Support</button>
+                        <button>Поддержка</button>
                       </li>
                       <li>
-                        <button onClick={onLogout}>Logout</button>
+                        <button onClick={onLogout}>Выйти</button>
                       </li>
                     </div>
                   </ul>
@@ -128,15 +128,15 @@ export function Navbar({
               onMouseEnter={() => setIsDropdownOpen(true)}
               onMouseLeave={() => setIsDropdownOpen(false)}
             >
-              <a href="#more">More</a>
+              <a href="#more">Ещё</a>
               {isDropdownOpen && (
                 <ul className="dropdown-content">
                   <div>
                     <li>
-                      <button>Help</button>
+                      <button>Помощь</button>
                     </li>
                     <li>
-                      <button>About us</button>
+                      <button>О нас</button>
                     </li>
                   </div>
                 </ul>

@@ -25,19 +25,19 @@ export function LoginForm({ setActiveForm, onLoginSuccess }) {
     <>
       <div className="main-div">
         <form className="form" onSubmit={handlSubmit}>
-          <label>Email or username</label>
+          <label>Почта или ваш никнейм</label>
           <input
             type="text"
-            placeholder="bruh@example.com or bruh1234"
+            placeholder="bruh@example.com или bruh1234"
             name="login"
             value={formData.login}
             onChange={handleChange}
           />
 
-          <label>Password</label>
+          <label>Пароль</label>
           <input
             type="password"
-            placeholder="enter your password"
+            placeholder="введите ваш пароль"
             name="password"
             value={formData.password}
             onChange={handleChange}
@@ -49,7 +49,7 @@ export function LoginForm({ setActiveForm, onLoginSuccess }) {
           href="#forgot-password"
           onClick={() => setActiveForm('forgot-password')}
         >
-          Forgot password?
+          Забыли пароль?
         </a>
 
         <ConfirmLogin 
@@ -59,8 +59,8 @@ export function LoginForm({ setActiveForm, onLoginSuccess }) {
 
         <div className="github-div">
           <p>
-            Do you have a GitHub account? Great! <br />
-            You can sign in with it!
+            У вас есть аккаунт на GitHub? Супер!<br />
+            Можете войти через него:
           </p>
           <GithubButton />
         </div>
@@ -70,12 +70,12 @@ export function LoginForm({ setActiveForm, onLoginSuccess }) {
           href="#register"
           onClick={() => setActiveForm('register')}
         >
-          Don't have account? Register.
+          Ещё нет аккаунта? Зарегистрируйтесь.
         </a>
       </div>
 
       <div className='back-div'>
-        <a href="#home" onClick={() => setActiveForm(null)}>← Back to Home</a>
+        <a href="#home" onClick={() => setActiveForm(null)}>← Вернуться на Главную страницу</a>
       </div>
     </>
   );
