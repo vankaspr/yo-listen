@@ -13,9 +13,7 @@ from core.database.schemas.auth import (
     )
 
 from core.database.models import User
-
-from core.services.user import UserService
-from core.services.oauth import OauthService
+from core.services import UserService, OauthService
 from core.dependency.services import get_user_service
 from core.dependency.user import get_current_user
 from core.dependency.services import get_oauth_service

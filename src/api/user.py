@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from typing import Annotated
 from core.database.models import User
-from core.services.profile import ProfileService
+from core.services import ProfileService
 from core.dependency.user import get_current_user
 from core.dependency.services import get_profile_service
 from core.config import settings

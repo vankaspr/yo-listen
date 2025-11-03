@@ -3,7 +3,7 @@ from typing import Annotated
 
 from core.config import settings
 from core.database.models import User
-from core.services.admin import AdminService
+from core.services import AdminService
 from core.dependency.admin import get_current_superuser
 from core.dependency.services import get_admin_service
 
