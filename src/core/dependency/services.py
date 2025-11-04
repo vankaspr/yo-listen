@@ -2,11 +2,13 @@ from fastapi import BackgroundTasks, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 from core.database import db_helper
-from core.services.user import UserService
-from core.services.admin import AdminService
-from core.services.oauth import OauthService
-from core.services.profile import ProfileService
-
+from core.services import (
+    UserService,
+    AdminService,
+    ProfileService,
+    OauthService,
+    PostLikeCommentService,
+)
 async def get_user_service(
     background_task: BackgroundTasks,
     session: Annotated[
@@ -45,3 +47,12 @@ async def get_profile_service(
     ],
 ) -> ProfileService:
     return ProfileService(session=session)
+
+
+async def get_post_like_comment_service(
+    session: Annotated[
+        AsyncSession,
+        Depends(db_helper.session_getter),
+    ],
+) -> PostLikeCommentService:
+    return PostLikeCommentService(session=session)
