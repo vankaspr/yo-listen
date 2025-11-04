@@ -34,6 +34,9 @@ class ApiPrefix(BaseModel):
     auth: str = "/auth"
     user: str = "/user"
     admin: str = "/admin"
+    post: str = "/post"
+    like: str = "/like"
+    comment: str = "/comment"
 
 
 class Settings(BaseSettings):
