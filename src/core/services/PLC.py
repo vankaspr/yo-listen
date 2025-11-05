@@ -2,6 +2,7 @@ import logging
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database.models import Post, Like, Comment
+from exceptions import error
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +137,9 @@ class PostLikeCommentService:
         Update post
         """
         if not await self._is_post_owner(post_id=post_id, user_id=user_id):
-            raise ValueError("You are not the owner of this post")
+            raise error.NotAllowed(
+                "You are not the owner, you cannot edit or delete what does not belong to you."
+            )
 
         stmt = update(Post).where(Post.id == post_id).values(**kwargs)
         await self.session.execute(stmt)
@@ -151,12 +154,15 @@ class PostLikeCommentService:
         """
         Hide post (is_published = False)
         """
-        if not await self._is_post_owner(post_id=post_id, user_id=user_id):
-            raise ValueError("You are not the owner of this post")
 
         post = await self.get_post_by_id(post_id=post_id)
         if not post:
-            raise ValueError("Post with %r ID not found", post_id)
+            raise error.NotFound(f"Post with {post_id} ID not found")
+
+        if not await self._is_post_owner(post_id=post_id, user_id=user_id):
+            raise error.NotAllowed(
+                "You are not the owner, you cannot edit or delete what does not belong to you."
+            )
 
         post.is_published = False
         await self.session.commit()
@@ -172,15 +178,14 @@ class PostLikeCommentService:
         return boolean
         """
 
-        
-        
-        
         post = await self.get_post_by_id(post_id=post_id)
         if not post:
-            raise ValueError("Post with %r ID not found", post_id)
-        
+            raise error.NotFound(f"Post with {post_id} ID not found")
+
         if not await self._is_post_owner(post_id=post_id, user_id=user_id):
-            raise ValueError("You are not the owner of this post")
+            raise error.NotAllowed(
+                "You are not the owner, you cannot edit or delete what does not belong to you."
+            )
 
         await self.session.delete(post)
         await self.session.commit()
@@ -192,8 +197,6 @@ class PostLikeCommentService:
             post_id,
         )
         return True
-    
-    # TODO: сделать понятные исключения 
 
     # ----------------------LIKE --------------------
     async def like_post(
@@ -279,12 +282,12 @@ class PostLikeCommentService:
         comment_id: int,
         user_id: int,
     ) -> bool:
-        """ 
+        """
         Checks that the user is the owner of the comment.
         """
         comment = await self.get_comment_by_id(comment_id=comment_id)
         return comment is not None and comment.user_id == user_id
-        
+
     async def create_comment(
         self,
         user_id: int,
@@ -339,15 +342,14 @@ class PostLikeCommentService:
         """
         Delete comment by ID
         """
-        
-        if not await self._is_comment_owner(comment_id, user_id):
-            raise ValueError("You are not the owner of this comment")
-        
-        
+
         comment = await self.get_comment_by_id(comment_id=comment_id)
         if not comment:
-            raise ValueError("Comment with %r ID not found", comment_id)
+            raise error.NotFound(f"Comment with {comment_id} ID not found")
 
+        if not await self._is_comment_owner(comment_id, user_id):
+            raise error.NotAllowed("You are not the owner of this comment,you cannot edit or delete what does not belong to you.")
+        
         await self.session.delete(comment)
 
         # comment counter
@@ -377,7 +379,7 @@ class PostLikeCommentService:
         Update comment
         """
         if not await self._is_comment_owner(comment_id, user_id):
-            raise ValueError("You are not the owner of this comment")
+            raise error.NotAllowed("You are not the owner of this comment,you cannot edit or delete what does not belong to you.")
 
         stmt = update(Comment).where(Comment.id == comment_id).values(content)
         await self.session.execute(stmt)

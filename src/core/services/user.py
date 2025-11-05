@@ -1,11 +1,11 @@
-import re
 import jwt
+import re
 import logging
 from core.CONST import NOW
 
 
 from typing import Optional
-from datetime import timedelta, timezone, datetime
+from datetime import timedelta
 
 from fastapi import (
     Request, 
@@ -21,7 +21,7 @@ from core.database.models import User, RefreshToken, Profile
 from utilities.security import hash_password, verify_password
 from utilities.jwt_token import create_jwt_token, verify_token
 
-from exceptions import auth
+from exceptions import error
 
 from core.mailing import (
     send_answer_after_verify,
@@ -60,9 +60,9 @@ class UserService:
         
         # logic for unique email and username:
         if await self.get_user_by_email(user_data.email):
-            raise auth.LoginAlreadyExist("Email already exist!")
+            raise error.LoginAlreadyExist("Email already exist!")
         if await self.get_user_by_username(user_data.username):
-            raise auth.LoginAlreadyExist("Username already exist!")
+            raise error.LoginAlreadyExist("Username already exist!")
         
         # password validation: 
         await self.validate_password(user_data.password)
@@ -114,17 +114,17 @@ class UserService:
             user = await self.get_user_by_username(login)
             
         if not user:
-            raise auth.UserNotFound
+            raise error.NotFound("User not found!")
         
         if not user.is_active:
-            raise auth.AccountDeactivated
+            raise error.NotAllowed("Account is deactivated!")
         
         if not user.is_verified:
-            raise auth.EmailNotVerified
+            raise error.NotAllowed("Email not verified!")
         
         # verifying password
         if not verify_password(password, user.hashed_password):
-            raise auth.InvalidPassword
+            raise error.NotValidData("Invalid password!")
         
         return user
     
@@ -228,13 +228,13 @@ class UserService:
             payload = verify_token(token=token)
             
             if not payload or payload.get("type") != "email_verification":
-                raise auth.InvalidToken
+                raise error.ErrorToken("Invalid token or missing token!")
             
             user_id = int(payload.get("sub"))
             user = await self.get_user_by_id(user_id)
 
             if not user:
-                raise auth.UserNotFound
+                raise error.NotFound("User not found!")
 
             user.is_verified = True
             
@@ -252,11 +252,11 @@ class UserService:
         
             return user
         
-        except jwt.ExpiredSignatureError:
-            raise auth.ExpiredToken
+        except jwt.ExpiredSignatureError as e:
+            raise error.ErrorToken("Token already expired!") from e
             
-        except jwt.InvalidTokenError:
-            raise auth.InvalidToken
+        except jwt.InvalidTokenError as e:
+            raise error.ErrorToken("Invalid token!") from e
     
     
     async def validate_password(
@@ -275,15 +275,15 @@ class UserService:
         pass
     
         #if len(password) < 8:
-        #    raise auth.ErrorPasswordValidation("Password should be at least 8 characters long")
+        #    raise error.NotValidData("Password should be at least 8 characters long")
         #if password.isdigit():
-        #    raise auth.ErrorPasswordValidation("Password should not contain only digits")
+        #    raise error.NotValidData("Password should not contain only digits")
         #if not re.search(r"[A-Z]", password):
-        #    raise auth.ErrorPasswordValidation("Password must contain at least one uppercase letter")
+        #    raise error.NotValidData("Password must contain at least one uppercase letter")
         #if not re.search(r"[0-9]", password):
-        #    raise auth.ErrorPasswordValidation("Password must contain at least one digit")
+        #    raise error.NotValidData("Password must contain at least one digit")
         #if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
-        #   raise auth.ErrorPasswordValidation("Password must contain at least one special character")
+        #    raise error.NotValidData("Password must contain at least one special character")
     
     
     async def forgot_password(
@@ -298,13 +298,13 @@ class UserService:
         user = await self.get_user_by_email(email=email)
         
         if not user:
-            raise auth.UserNotFound
+            raise error.NotFound("User not found!")
         
         if not user.is_active:
-            raise auth.AccountDeactivated
+            raise error.NotAllowed("Account is deactivated!")
         
         if not user.is_verified:
-            raise auth.EmailNotVerified
+            raise error.NotAllowed("Email not verified!")
         
         reset_data = {
             "sub": str(user.id),
@@ -353,23 +353,23 @@ class UserService:
         try:
             payload = verify_token(token=token)
             if not payload or payload.get("type") != "password_reset":
-                raise auth.InvalidToken
+                raise error.ErrorToken("Invaalid token or missing token")
             
             user_id = int(payload.get("sub"))
             user = await self.get_user_by_id(user_id=user_id)
             
             if not user:
-                raise auth.UserNotFound
+                raise error.NotFound("User not found!")
             
             if not user.is_active:
-                raise auth.AccountDeactivated
+                raise error.NotAllowed("Account is deactivated!")
             
             # password validation:
             await self.validate_password(new_password)
             
             # check password if new pwd equal current:
             if verify_password(new_password, user.hashed_password):
-                raise auth.ErrorPasswordValidation("New password cannot be the same as the current password")
+                raise error.NotValidData("New password cannot be the same as the current password")
             
             # change password
             user.hashed_password = hash_password(new_password)
@@ -392,11 +392,11 @@ class UserService:
                 - %r - !! 
                 """, user_id
             )
-        except jwt.ExpiredSignatureError:
-            raise auth.ExpiredToken
+        except jwt.ExpiredSignatureError as e:
+            raise error.ErrorToken("Token already expired!") from e
         
-        except jwt.InvalidTokenError:
-            raise auth.InvalidToken
+        except jwt.InvalidTokenError as e:
+            raise error.ErrorToken("Invalid token!") from e
         
     
     async def create_refresh_token(
@@ -438,7 +438,7 @@ class UserService:
         payload = verify_token(token=token, expected_type="refresh_token")
         
         if not payload or payload.get("type") != "refresh_token":
-            raise auth.InvalidToken
+            raise error.ErrorToken("Mising token or invalid token!")
         
         return payload
     
@@ -469,13 +469,12 @@ class UserService:
             await self.verify_refresh_token(token=token)
             
             # check in DB if token is revoked
-            token = await self.get_valid_refresh_token(token=token)
+            return await self.get_valid_refresh_token(token=token)
             
-            return token
         
         except Exception as e:
             logger.error("Error: ", e)
-            raise auth.InvalidToken
+            raise error.ErrorToken("Invalid token") from e
         
     async def revoke_refresh_token(
         self,

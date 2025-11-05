@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.services.user import UserService
 from core.database.models import User
 from core.CONST import NOW
+from exceptions import error
 
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -103,7 +103,7 @@ class AdminService:
         
         user = await self.user_service.get_user_by_id(user_id=user_id)
         if not user:
-            raise ValueError(f"user with id {user_id} not found")
+            raise error.NotFound(f"user with id {user_id} not found")
         
         user.is_active = False
         await self.session.commit()
@@ -126,7 +126,7 @@ class AdminService:
         
         user = await self.user_service.get_user_by_id(user_id=user_id)
         if not user:
-            raise ValueError(f"user with id {user_id} not found")
+            raise error.NotFound(f"user with id {user_id} not found")
 
         user.is_active = True
         await self.session.commit()
@@ -150,7 +150,7 @@ class AdminService:
         
         user = await self.user_service.get_user_by_id(user_id=user_id)
         if not user:
-            raise ValueError(f"user with id {user_id} not found")
+            raise error.NotFound(f"user with id {user_id} not found")
         
         await self.session.delete(user)
         await self.session.commit()

@@ -2,8 +2,9 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database.models import User, Profile
+from exceptions import error
 
-logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 
@@ -53,7 +54,7 @@ class ProfileService:
         
         profile = await self.get_user_profile(user_id=user_id)
         if not profile:
-            raise ValueError("Profile not found")
+            raise error.NotFound("Profile not found")
         
         for filed, value in update_data.items():
             if hasattr(profile, filed):
