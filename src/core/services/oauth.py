@@ -2,15 +2,13 @@ import logging
 import aiohttp
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
 
 from core.services.user import UserService
 from core.database.models import User
 from utilities.jwt_token import create_jwt_token
-from exceptions import auth
+from exceptions import error
 from core.config import settings
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class OauthService:
@@ -76,17 +74,28 @@ class OauthService:
                 headers=headers
             ) as response:
                 if response.status != 200:
-                    error = await response.text()
+                    err = await response.text()
                     logger.error(
                         """ 
                         GitHub token exchange failed:
                         %r
-                        """, error
+                        """, err
                     )
-                    raise auth.OauthError("Failed to get access token")
+                    raise error.Unauthorized("Failed to get access token")
                     
                 result = await response.json()
-                return result["access_token"]
+                logger.info("Parsed GitHub response: %s", result)
+                
+                access_token = (
+                    result.get("access_token") or
+                    result.get("token")
+                )
+                
+                if not access_token:
+                    logger.error("No access token found in GitHub response. Available keys: %s", list(result.keys()))
+                    raise error.Unauthorized("GitHub didn't return access token")
+                
+                return access_token
         
         
     
@@ -106,14 +115,14 @@ class OauthService:
                 headers=headers,
             ) as response:
                 if response.status != 200:
-                    error = await response.text()
+                    err = await response.text()
                     logger.error(
                         """ 
                         GitHub user info failed: 
                         %r
-                        """, error
+                        """, err
                     )
-                    raise auth.OauthError("Failed to get user info")
+                    raise error.Unauthorized("Failed to get user info")
                 
                 user_data = await response.json()
             
@@ -141,7 +150,7 @@ class OauthService:
         """
         
         github_id = user_data["id"]
-        email = user_data["email"]
+        email = user_data.get("email")
         
         
         stmt = select(User).where(User.github_id == github_id)
