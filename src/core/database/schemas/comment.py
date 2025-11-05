@@ -7,7 +7,7 @@ class CommentBase(BaseModel):
     
     
 class CommentCreate(CommentBase):
-    post_id: int
+    pass
     
 
 class CommentUpdate(BaseModel):
