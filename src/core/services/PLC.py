@@ -1,6 +1,7 @@
 import logging
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 from core.database.models import Post, Like, Comment
 from exceptions import error
 
@@ -40,7 +41,7 @@ class PostLikeCommentService:
         """
         Get post by ID return post or None
         """
-        stmt = select(Post).where(Post.id == post_id)
+        stmt = select(Post).options(joinedload(Post.author)).where(Post.id == post_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
