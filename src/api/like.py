@@ -3,6 +3,10 @@ from typing import Annotated
 from core.database.models import User
 from core.dependency.user import get_current_user
 from core.config import settings
+from core.database.schemas.like import LikeCountResponse
+from core.dependency.services import get_post_like_comment_service
+from core.services.PLC import PostLikeCommentService
+
 
 router = APIRouter(
     prefix=settings.api.like,
@@ -17,8 +21,12 @@ async def like_post(
         User,
         Depends(get_current_user),
     ],
+    service: Annotated[
+        PostLikeCommentService,
+        Depends(get_post_like_comment_service),
+    ],
 ):
-    pass
+    return await service.like_post(user_id=user.id, post_id=post_id)
 
 
 @router.get("/post/{post_id}")
@@ -28,8 +36,15 @@ async def get_post_likes(
         User,
         Depends(get_current_user),
     ],
+    service: Annotated[
+        PostLikeCommentService,
+        Depends(get_post_like_comment_service),
+    ],
 ):
-    pass
+    """ 
+    Display a list of users who liked the post
+    """
+    return await service.get_post_likes(post_id=post_id)
 
 
 @router.delete("/post/{post_id}")
@@ -39,5 +54,9 @@ async def unlike_post(
         User,
         Depends(get_current_user),
     ],
+    service: Annotated[
+        PostLikeCommentService,
+        Depends(get_post_like_comment_service),
+    ],
 ):
-    pass
+    return await service.unlike_post(user_id=user.id, post_id=post_id)
