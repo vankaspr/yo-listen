@@ -13,7 +13,7 @@ class PostLikeCommentService:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    # --------------- POST --------------------
+    # --------------- POST -------------------- #
     async def create_post(
         self,
         user_id: int,
@@ -200,7 +200,7 @@ class PostLikeCommentService:
         )
         return True
 
-    # ----------------------LIKE --------------------
+    # ----------------------LIKE -------------------- #
     async def like_post(
         self,
         user_id: int,
@@ -284,8 +284,45 @@ class PostLikeCommentService:
                 post.like_count += 1
             else:
                 post.like_count = max(0, post.like_count - 1)
+                
+    # --------------- LIKE COMMENT --------------------------------- #
+                
+    async def _update_comment_like_count(
+        self,
+        comment_id: int,
+        increment: bool = True,
+    ) -> None:
+        comment = await self.get_comment_by_id(comment_id=comment_id)
+        if comment:
+            if increment:
+                comment.like_count += 1
+            else:
+                comment.like_count = (0, comment.like_count - 1)
+                
+    
+    async def like_comment(
+        self,
+        user_id: int,
+        comment_id: int,
+    ) -> Like:
+        pass
+    
+    async def unlike_comment(
+        self,
+        user_id: int,
+        comment_id: int,
+    ) -> bool:
+        pass
+    
+    async def get_comment_likes(
+        self,
+        comment_id,
+    ) -> list[Like]:
+        pass
+    
+    
 
-    # ---------------- COMMENT --------------------
+    # ---------------- COMMENT -------------------- #
     async def _is_comment_owner(
         self,
         comment_id: int,

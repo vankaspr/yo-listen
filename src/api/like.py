@@ -41,7 +41,7 @@ async def get_post_likes(
         Depends(get_post_like_comment_service),
     ],
 ):
-    """ 
+    """
     Display a list of users who liked the post
     """
     return await service.get_post_likes(post_id=post_id)
@@ -60,3 +60,51 @@ async def unlike_post(
     ],
 ):
     return await service.unlike_post(user_id=user.id, post_id=post_id)
+
+
+# TODO: like ando unlike comment ++
+@router.post("/comment/{comment_id}")
+async def like_comment(
+    comment_id: int,
+    user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        PostLikeCommentService,
+        Depends(get_post_like_comment_service),
+    ],
+):
+    pass
+
+@router.delete("/comment/{comment_id}")
+async def unlike_comment(
+    comment_id: int,
+    user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        PostLikeCommentService,
+        Depends(get_post_like_comment_service),
+    ],
+):
+    pass
+
+@router.get("/comment/{comment_id}")
+async def get_comment_likes(
+    comment_id: int,
+    user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        PostLikeCommentService,
+        Depends(get_post_like_comment_service),
+    ],
+):
+    """
+    Display a list of users who liked the comment
+    """
+    pass
+
