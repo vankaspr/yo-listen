@@ -1,6 +1,7 @@
 import logging
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from core.database.models import Post, Like, Comment
 from exceptions import error
@@ -205,23 +206,29 @@ class PostLikeCommentService:
         user_id: int,
         post_id: int,
     ) -> Like:
-        like = Like(
-            user_id=user_id,
-            post_id=post_id,
-        )
+        try:
+            like = Like(
+                user_id=user_id,
+                post_id=post_id,
+            )
 
-        self.session.add(like)
+            self.session.add(like)
 
-        # update like count
-        await self._update_post_like_count(
-            post_id=post_id,
-            increment=True,
-        )
+            # update like count
+            await self._update_post_like_count(
+                post_id=post_id,
+                increment=True,
+            )
 
-        await self.session.commit()
-        await self.session.refresh(like)
+            await self.session.commit()
+            await self.session.refresh(like)
 
-        return like
+            return like
+        except IntegrityError as e:
+            await self.session.rollback()
+            if "unique_user_post_like" in str(e):
+                raise error.NotAllowed("You have already liked this post") from e
+            raise error.NotValidData("Invalid data") from e
 
     async def unlike_post(
         self,
@@ -248,7 +255,8 @@ class PostLikeCommentService:
             await self.session.commit()
 
             return True
-        return False
+        else:
+            raise error.NotAllowed("You haven't liked this post yet")
 
     async def get_post_likes(
         self,
@@ -257,7 +265,7 @@ class PostLikeCommentService:
         """
         Get all likes by post
         """
-        stmt = select(Like).where(Like.post_id == post_id)
+        stmt = select(Like).options(joinedload(Like.user)).where(Like.post_id == post_id)
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
