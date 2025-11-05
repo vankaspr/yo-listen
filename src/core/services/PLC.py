@@ -297,16 +297,32 @@ class PostLikeCommentService:
         comment = await self.get_comment_by_id(comment_id=comment_id)
         return comment is not None and comment.user_id == user_id
 
+    def _validate_comment_content(self, content: str) -> None:
+        """ 
+        Validate comment content 
+        """
+        if not content or not content.strip():
+            raise error.NotValidData("Comment cannot be empty")
+        
+        stripped_content = content.strip()
+        
+        if len(stripped_content) > 1000:
+            raise error.NotAllowed("Comment is too long")
+        
+    
     async def create_comment(
         self,
         user_id: int,
         post_id: int,
         content: str,
     ) -> Comment:
+        
+        self._validate_comment_content(content)
+        
         comment = Comment(
             user_id=user_id,
             post_id=post_id,
-            content=content,
+            content=content.strip(),
         )
         self.session.add(comment)
 
@@ -339,7 +355,7 @@ class PostLikeCommentService:
         """
         Get all comment by post
         """
-        stmt = select(Comment).where(Comment.post_id == post_id)
+        stmt = select(Comment).options(joinedload(Comment.author)).where(Comment.post_id == post_id)
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
@@ -390,6 +406,8 @@ class PostLikeCommentService:
         if not await self._is_comment_owner(comment_id, user_id):
             raise error.NotAllowed("You are not the owner of this comment,you cannot edit or delete what does not belong to you.")
 
+        self._validate_comment_content(content)
+        
         stmt = update(Comment).where(Comment.id == comment_id).values(content)
         await self.session.execute(stmt)
         await self.session.commit()
