@@ -3,7 +3,12 @@ from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
-from core.database.models import Post, Like, Comment
+from core.database.models import (
+    Post,
+    Like,
+    Comment,
+    CommentLike,
+)
 from exceptions import error
 
 logger = logging.getLogger(__name__)
@@ -206,6 +211,9 @@ class PostLikeCommentService:
         user_id: int,
         post_id: int,
     ) -> Like:
+        """
+        Create like on post
+        """
         try:
             like = Like(
                 user_id=user_id,
@@ -236,7 +244,7 @@ class PostLikeCommentService:
         post_id: int,
     ) -> bool:
         """
-        Delete like
+        Delete like on post
         """
         stmt = delete(Like).where(
             Like.user_id == user_id,
@@ -265,7 +273,9 @@ class PostLikeCommentService:
         """
         Get all likes by post
         """
-        stmt = select(Like).options(joinedload(Like.user)).where(Like.post_id == post_id)
+        stmt = (
+            select(Like).options(joinedload(Like.user)).where(Like.post_id == post_id)
+        )
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
@@ -284,9 +294,9 @@ class PostLikeCommentService:
                 post.like_count += 1
             else:
                 post.like_count = max(0, post.like_count - 1)
-                
+
     # --------------- LIKE COMMENT --------------------------------- #
-                
+
     async def _update_comment_like_count(
         self,
         comment_id: int,
@@ -297,30 +307,83 @@ class PostLikeCommentService:
             if increment:
                 comment.like_count += 1
             else:
-                comment.like_count = (0, comment.like_count - 1)
-                
-    
+                comment.like_count = max(0, comment.like_count - 1)
+        else:
+            raise error.NotFound("Comment not found")
+
     async def like_comment(
         self,
         user_id: int,
         comment_id: int,
-    ) -> Like:
-        pass
-    
+    ) -> CommentLike:
+        """
+        Create like on comment
+        """
+        try:
+            comment_like = CommentLike(
+                user_id=user_id,
+                comment_id=comment_id,
+            )
+            self.session.add(comment_like)
+
+            # update like count
+            await self._update_comment_like_count(
+                comment_id=comment_id,
+                increment=True,
+            )
+
+            await self.session.commit()
+            await self.session.refresh(comment_like)
+
+            return comment_like
+
+        except IntegrityError as e:
+            await self.session.rollback()
+            if "unique_user_post_like" in str(e):
+                raise error.NotAllowed("You have already liked this post") from e
+            raise error.NotValidData("Invalid data. You cannot liked twice!") from e
+
     async def unlike_comment(
         self,
         user_id: int,
         comment_id: int,
     ) -> bool:
-        pass
-    
+        """
+        Delete like on comment
+        """
+        stmt = delete(CommentLike).where(
+            CommentLike.user_id == user_id,
+            CommentLike.comment_id == comment_id,
+        )
+
+        result = await self.session.execute(stmt)
+
+        if result.rowcount > 0:
+
+            await self._update_comment_like_count(
+                comment_id=comment_id, increment=False
+            )
+            await self.session.commit()
+            return True
+        else:
+            raise error.NotAllowed(
+                "You haven't liked this comment yet or comment not found"
+            )
+
     async def get_comment_likes(
         self,
         comment_id,
-    ) -> list[Like]:
-        pass
-    
-    
+    ) -> list[CommentLike]:
+        """
+        Get list with all likes by comment
+        """
+        stmt = (
+            select(CommentLike)
+            .options(joinedload(CommentLike.user))
+            .where(CommentLike.comment_id == comment_id)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
 
     # ---------------- COMMENT -------------------- #
     async def _is_comment_owner(
@@ -335,27 +398,26 @@ class PostLikeCommentService:
         return comment is not None and comment.user_id == user_id
 
     def _validate_comment_content(self, content: str) -> None:
-        """ 
-        Validate comment content 
+        """
+        Validate comment content
         """
         if not content or not content.strip():
             raise error.NotValidData("Comment cannot be empty")
-        
+
         stripped_content = content.strip()
-        
+
         if len(stripped_content) > 1000:
             raise error.NotAllowed("Comment is too long")
-        
-    
+
     async def create_comment(
         self,
         user_id: int,
         post_id: int,
         content: str,
     ) -> Comment:
-        
+
         self._validate_comment_content(content)
-        
+
         comment = Comment(
             user_id=user_id,
             post_id=post_id,
@@ -392,7 +454,11 @@ class PostLikeCommentService:
         """
         Get all comment by post
         """
-        stmt = select(Comment).options(joinedload(Comment.author)).where(Comment.post_id == post_id)
+        stmt = (
+            select(Comment)
+            .options(joinedload(Comment.author))
+            .where(Comment.post_id == post_id)
+        )
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
@@ -410,8 +476,10 @@ class PostLikeCommentService:
             raise error.NotFound(f"Comment with {comment_id} ID not found")
 
         if not await self._is_comment_owner(comment_id, user_id):
-            raise error.NotAllowed("You are not the owner of this comment,you cannot edit or delete what does not belong to you.")
-        
+            raise error.NotAllowed(
+                "You are not the owner of this comment,you cannot edit or delete what does not belong to you."
+            )
+
         await self.session.delete(comment)
 
         # comment counter
@@ -441,10 +509,12 @@ class PostLikeCommentService:
         Update comment
         """
         if not await self._is_comment_owner(comment_id, user_id):
-            raise error.NotAllowed("You are not the owner of this comment,you cannot edit or delete what does not belong to you.")
+            raise error.NotAllowed(
+                "You are not the owner of this comment,you cannot edit or delete what does not belong to you."
+            )
 
         self._validate_comment_content(content)
-        
+
         stmt = update(Comment).where(Comment.id == comment_id).values(content)
         await self.session.execute(stmt)
         await self.session.commit()
