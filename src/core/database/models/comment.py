@@ -28,3 +28,4 @@ class Comment(Base):
     
     author: Mapped["User"] = relationship("User", back_populates="comments")
     post: Mapped["Post"] = relationship("Post", back_populates="comments")
+    likes: Mapped["CommentLike"] = relationship("CommentLike", back_populates="comment")
