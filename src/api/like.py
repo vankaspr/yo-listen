@@ -62,7 +62,6 @@ async def unlike_post(
     return await service.unlike_post(user_id=user.id, post_id=post_id)
 
 
-# TODO: like ando unlike comment ++
 @router.post("/comment/{comment_id}")
 async def like_comment(
     comment_id: int,
@@ -77,6 +76,7 @@ async def like_comment(
 ):
     return await service.like_comment(user_id=user.id, comment_id=comment_id)
 
+
 @router.delete("/comment/{comment_id}")
 async def unlike_comment(
     comment_id: int,
@@ -90,6 +90,7 @@ async def unlike_comment(
     ],
 ):
     return await service.unlike_comment(user_id=user.id, comment_id=comment_id)
+
 
 @router.get("/comment/{comment_id}")
 async def get_comment_likes(
@@ -107,4 +108,3 @@ async def get_comment_likes(
     Display a list of users who liked the comment
     """
     return await service.get_comment_likes(comment_id=comment_id)
-
