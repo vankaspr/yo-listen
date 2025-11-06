@@ -37,6 +37,7 @@ class ApiPrefix(BaseModel):
     post: str = "/post"
     like: str = "/like"
     comment: str = "/comment"
+    home: str = "/home"
 
 
 class Settings(BaseSettings):
