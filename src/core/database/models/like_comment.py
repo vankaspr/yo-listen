@@ -15,7 +15,7 @@ class CommentLike(Base):
     
     comment_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("comments.id"),
+        ForeignKey("comments.id", ondelete="CASCADE"),
         nullable=False,
         
     )

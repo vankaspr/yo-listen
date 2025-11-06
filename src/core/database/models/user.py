@@ -34,22 +34,24 @@ class User(Base):
         cascade="all, delete-orphan",
     )
     
-    posts: Mapped["Post"] = relationship(
+    posts: Mapped[list["Post"]] = relationship(
         "Post",
         back_populates="author",
     )
     
-    likes: Mapped["Like"] = relationship(
+    likes: Mapped[list["Like"]] = relationship(
         "Like",
         back_populates="user",
     )
     
-    comment_likes: Mapped["CommentLike"] = relationship(
+    comment_likes: Mapped[list["CommentLike"]] = relationship(
         "CommentLike",
         back_populates="user",
+        cascade="all, delete-orphan",
     )
     
-    comments: Mapped["Comment"] = relationship(
+    comments: Mapped[list["Comment"]]  = relationship(
         "Comment",
         back_populates="author",
+        cascade="all, delete-orphan",
     )
