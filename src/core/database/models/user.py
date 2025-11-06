@@ -31,20 +31,25 @@ class User(Base):
         "Profile",
         back_populates="user",
         uselist=False,
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
     
     posts: Mapped["Post"] = relationship(
         "Post",
-        back_populates="author"
+        back_populates="author",
     )
     
     likes: Mapped["Like"] = relationship(
         "Like",
-        back_populates="user"
+        back_populates="user",
+    )
+    
+    comment_likes: Mapped["CommentLike"] = relationship(
+        "CommentLike",
+        back_populates="user",
     )
     
     comments: Mapped["Comment"] = relationship(
         "Comment",
-        back_populates="author"
+        back_populates="author",
     )
