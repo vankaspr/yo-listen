@@ -8,7 +8,9 @@ from core.database.models import (
     Like,
     Comment,
     CommentLike,
+    User
 )
+
 from exceptions import error
 
 logger = logging.getLogger(__name__)
@@ -17,6 +19,7 @@ logger = logging.getLogger(__name__)
 class PostLikeCommentService:
     def __init__(self, session: AsyncSession):
         self.session = session
+        
 
     # --------------- POST -------------------- #
     async def create_post(
@@ -123,7 +126,7 @@ class PostLikeCommentService:
             "all_posts": len(public_posts) + len(hidden_posts),
         }
 
-    async def _is_post_owner(
+    async def _can_manage_post(
         self,
         post_id: int,
         user_id: int,
@@ -131,7 +134,21 @@ class PostLikeCommentService:
         """
         Checks that the user is the owner of the post.
         """
+        stmt = select(User).where(User.id == user_id)
+        result = await self.session.execute(stmt)
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            return False
+
+        # admin can everything 🤌
+        if user.is_superuser:
+            return True
+
         post = await self.get_post_by_id(post_id=post_id)
+        if not post:
+            raise error.NotFound("Post not found")
+
         return post is not None and post.user_id == user_id
 
     async def update_post(
@@ -143,7 +160,7 @@ class PostLikeCommentService:
         """
         Update post
         """
-        if not await self._is_post_owner(post_id=post_id, user_id=user_id):
+        if not await self._can_manage_post(post_id=post_id, user_id=user_id):
             raise error.NotAllowed(
                 "You are not the owner, you cannot edit or delete what does not belong to you."
             )
@@ -166,7 +183,7 @@ class PostLikeCommentService:
         if not post:
             raise error.NotFound(f"Post with {post_id} ID not found")
 
-        if not await self._is_post_owner(post_id=post_id, user_id=user_id):
+        if not await self._can_manage_post(post_id=post_id, user_id=user_id):
             raise error.NotAllowed(
                 "You are not the owner, you cannot edit or delete what does not belong to you."
             )
@@ -189,7 +206,7 @@ class PostLikeCommentService:
         if not post:
             raise error.NotFound(f"Post with {post_id} ID not found")
 
-        if not await self._is_post_owner(post_id=post_id, user_id=user_id):
+        if not await self._can_manage_post(post_id=post_id, user_id=user_id):
             raise error.NotAllowed(
                 "You are not the owner, you cannot edit or delete what does not belong to you."
             )
@@ -199,7 +216,7 @@ class PostLikeCommentService:
 
         logger.info(
             """ 
-            Post with  %r ID permanently delete by creater
+            Post with  %r ID permanently delete by creater or admin
             """,
             post_id,
         )
@@ -386,7 +403,7 @@ class PostLikeCommentService:
         return result.scalars().all()
 
     # ---------------- COMMENT -------------------- #
-    async def _is_comment_owner(
+    async def _can_manage_comment(
         self,
         comment_id: int,
         user_id: int,
@@ -394,7 +411,21 @@ class PostLikeCommentService:
         """
         Checks that the user is the owner of the comment.
         """
+        stmt = select(User).where(User.id == user_id)
+        result = await self.session.execute(stmt)
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            return False
+
+        # admin can everything 🤌
+        if user.is_superuser:
+            return True
+
         comment = await self.get_comment_by_id(comment_id=comment_id)
+        if not comment:
+            raise error.NotFound("Comment not found")
+
         return comment is not None and comment.user_id == user_id
 
     def _validate_comment_content(self, content: str) -> None:
@@ -475,9 +506,10 @@ class PostLikeCommentService:
         if not comment:
             raise error.NotFound(f"Comment with {comment_id} ID not found")
 
-        if not await self._is_comment_owner(comment_id, user_id):
+        if not await self._can_manage_comment(comment_id, user_id):
             raise error.NotAllowed(
-                "You are not the owner of this comment,you cannot edit or delete what does not belong to you."
+                "You are not the owner of this comment,\
+                you cannot edit or delete what does not belong to you."
             )
 
         await self.session.delete(comment)
@@ -492,7 +524,7 @@ class PostLikeCommentService:
 
         logger.info(
             """ 
-            Comment with %r ID permanently delete by creater
+            Comment with %r ID permanently delete by creater or admin
             """,
             comment_id,
         )
@@ -508,7 +540,7 @@ class PostLikeCommentService:
         """
         Update comment
         """
-        if not await self._is_comment_owner(comment_id, user_id):
+        if not await self._can_manage_comment(comment_id, user_id):
             raise error.NotAllowed(
                 "You are not the owner of this comment,you cannot edit or delete what does not belong to you."
             )
@@ -532,3 +564,19 @@ class PostLikeCommentService:
                 post.comment_count += 1
             else:
                 post.comment_count = max(0, post.comment_count - 1)
+
+    async def get_all_user_comments(
+        self,
+        user_id: int,
+    ) -> list[Comment]:
+        """ 
+        Get all user comments
+        """
+        stmt = (
+            select(Comment)
+            .where(Comment.user_id == user_id)
+            .order_by(Comment.created_at.desc())
+        )
+        
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
