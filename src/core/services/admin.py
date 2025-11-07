@@ -1,13 +1,14 @@
 import logging
-from datetime import timedelta
 from sqlalchemy import select, func
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.services.user import UserService
 from core.services.profile import ProfileService
 from core.services.PLC import PostLikeCommentService
+from utilities.now import get_now_date
 
 from core.database.models import User
-from core.CONST import NOW
+
 from exceptions import error
 
 
@@ -64,20 +65,24 @@ class AdminService:
         days_old: some number of days
         return list of users
         """
+        try:
+            date = get_now_date(days=days)
+            # date = NOW - timedelta(days=days)
 
-        date = NOW - timedelta(days=days)
-
-        stmt = (
-            select(User)
-            .where(
-                User.is_verified == False,
-                User.created_at < date,
+            stmt = (
+                select(User)
+                .where(
+                    User.is_verified == False,
+                    User.created_at < date,
+                )
+                .order_by(User.created_at.desc())
             )
-            .order_by(User.created_at.desc())
-        )
 
-        result = await self.session.execute(stmt)
-        return result.scalars().all()
+            result = await self.session.execute(stmt)
+            return result.scalars().all()
+        except SQLAlchemyError as e:
+            logger.error("Проснись ты обосрался. БД упала: ", e)
+            raise error.DataBaseError("Database temporarily unavailable") from e
 
     async def get_new_users(
         self,
@@ -89,7 +94,7 @@ class AdminService:
         return list of users
         """
 
-        date = NOW - timedelta(days=days)
+        date = get_now_date(days=days)
         stmt = select(User).where(
             User.created_at >= date,
         )
