@@ -1,15 +1,16 @@
 import logging
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import joinedload, selectinload
 from core.database.models import (
     Post,
     Like,
     Comment,
     CommentLike,
-    User
+    User,
 )
+from utilities.now import get_now_date
 
 from exceptions import error
 
@@ -19,7 +20,6 @@ logger = logging.getLogger(__name__)
 class PostLikeCommentService:
     def __init__(self, session: AsyncSession):
         self.session = session
-        
 
     # --------------- POST -------------------- #
     async def create_post(
@@ -137,7 +137,7 @@ class PostLikeCommentService:
         stmt = select(User).where(User.id == user_id)
         result = await self.session.execute(stmt)
         user = result.scalar_one_or_none()
-        
+
         if not user:
             return False
 
@@ -414,7 +414,7 @@ class PostLikeCommentService:
         stmt = select(User).where(User.id == user_id)
         result = await self.session.execute(stmt)
         user = result.scalar_one_or_none()
-        
+
         if not user:
             return False
 
@@ -569,7 +569,7 @@ class PostLikeCommentService:
         self,
         user_id: int,
     ) -> list[Comment]:
-        """ 
+        """
         Get all user comments
         """
         stmt = (
@@ -577,6 +577,66 @@ class PostLikeCommentService:
             .where(Comment.user_id == user_id)
             .order_by(Comment.created_at.desc())
         )
-        
+
         result = await self.session.execute(stmt)
         return result.scalars().all()
+
+    # --------------------- TRAND --------------------------
+    
+    async def get_tranding_posts_by_likes_count(
+        self,
+        limit: int = 20,
+        days: int = 30,
+    ) -> list[Post]:
+        """
+        Issues several posts according to the limit
+        (by default, the first 20 posts)
+        for 30 days that have a large number of likes and comments
+        """
+        try:
+            
+            now = get_now_date(days=days)
+            stmt = (
+                select(Post)
+                .where(
+                    Post.is_published == True,
+                    Post.created_at >= now,
+                )
+                .order_by(
+                    desc(Post.like_count),
+                    desc(Post.comment_count),
+                    desc(Post.created_at),
+                )
+                .limit(limit)
+                .options(selectinload(Post.author).selectinload(User.profile))
+            )
+
+            result = await self.session.execute(stmt)
+            return result.scalars().all()
+        except SQLAlchemyError as e:
+            logger.error("Проснись ты обосрался. БД упала: ", e)
+            raise error.DataBaseError("Database temporarily unavailable") from e
+        
+    # --------------------- STATS ------------------------------------
+    async def get_all_posts_count(
+        self,
+    ) -> int:
+        try:
+            stmt = select(func.count(Post.id)).where(Post.is_published == True)
+            result = await self.session.execute(stmt)
+            return result.scalar()
+        except SQLAlchemyError as e:
+            logger.error("Проснись ты обосрался. БД упала: ", e)
+            raise error.DataBaseError("Database temporarily unavailable") from e
+    
+    async def get_all_comments_count(
+        self,
+    ) -> int:
+        try:
+            stmt = select(func.count(Comment.id))
+            result = await self.session.execute(stmt)
+            return result.scalar()
+        except SQLAlchemyError as e:
+            logger.error("Проснись ты обосрался. БД упала: ", e)
+            raise error.DataBaseError("Database temporarily unavailable") from e
+
