@@ -37,11 +37,13 @@ class User(Base):
     posts: Mapped[list["Post"]] = relationship(
         "Post",
         back_populates="author",
+        cascade="all, delete-orphan",
     )
     
     likes: Mapped[list["Like"]] = relationship(
         "Like",
         back_populates="user",
+        cascade="all, delete-orphan",
     )
     
     comment_likes: Mapped[list["CommentLike"]] = relationship(
