@@ -156,21 +156,23 @@ class AdminService:
         """
         Delete user
         """
+        try:
+            user = await self.user_service.get_user_by_id(user_id=user_id)
+            if not user:
+                raise error.NotFound(f"user with id {user_id} not found")
 
-        user = await self.user_service.get_user_by_id(user_id=user_id)
-        if not user:
-            raise error.NotFound(f"user with id {user_id} not found")
+            await self.session.delete(user)
+            await self.session.commit()
 
-        await self.session.delete(user)
-        await self.session.commit()
-
-        logger.info(
-            """ 
-            User %r permanently delete by admin
-            """,
-            user_id,
-        )
-        return True
+            logger.info(
+                """ 
+                User %r permanently delete by admin
+                """,
+                user_id,
+            )
+            return True
+        except SQLAlchemyError as e:
+            raise error.DataBaseError("Беды с датабазе и проч. и проч.") from e
 
     # ------------ USER STATISTIC -------------------------
 
