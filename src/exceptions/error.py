@@ -30,5 +30,7 @@ class NotValidData(AppExecption):
         super().__init__(422, detail)
 
 
-        
+class DataBaseError(AppExecption):
+    def __init__(self, detail):
+        super().__init__(503, detail)
         
