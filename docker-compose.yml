@@ -1,13 +1,15 @@
+name: yo-listen
 services:
   pg:
     image: postgres
-    container_name: pg_audio
+    container_name: pg
     env_file:
       - .env.docker
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+      - ./backups:/backups
 
     
 
@@ -26,5 +28,21 @@ services:
       options:
         max-size: "1m"
 
+  backups:
+    image: postgres
+    container_name: pg_backup
+    env_file:
+      - .env.docker
+    volumes:
+      - ./backups:/backups
+    command: | 
+      bash -c "
+          pg_dump -h pg -U $${POSTGRES_USER} $${POSTGRES_DB} > /backups/backup_$$(date +%Y%m%d_%H%M%S).sql
+          echo 'Backup created!'
+        "
+    depends_on:
+      - pg
+    profiles: ["backup"]
+
 volumes:
-  postgres_data:
+  postgres-data: 
