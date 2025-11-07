@@ -8,7 +8,8 @@
 - Forgot & reset password 
 - Oauth: github 
 - User profile
-- Admin section: statistics ando user-action
+- Admin section: statistics ando user-action (plus create superuser in code)
+- Posts, likes and comments (create, update, delete) section
 
 ## 🛠️ Technologies used:
 
@@ -24,8 +25,8 @@
 ## 🚀 Quick start:
 
 ```
-git clone https://github.com/vankaspr/bare-minimum-for-auth-app.git
-cd bare-minimum-for-auth-app
+git clone https://github.com/vankaspr/yo-listen.git
+cd yo-listen
 
 # env file 
 cp .env.docker.example .env.docker
@@ -35,6 +36,7 @@ cp .env.example .env
 poetry install 
 
 # run 
-poetry run python src/main.py
+cd src
+poetry run python -m main
 
 ```
