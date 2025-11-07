@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.services.user import UserService
+from core.services.profile import ProfileService
 from core.database.models import User
 from utilities.jwt_token import create_jwt_token
 from exceptions import error
@@ -19,6 +20,7 @@ class OauthService:
     def __init__(self, session: AsyncSession):
         self.session = session
         self.user_service = UserService(session)
+        self.profile = ProfileService(session)
         
         
     async def authenticate(
@@ -36,6 +38,9 @@ class OauthService:
         
         #find or create user
         user = await self.find_or_create_user(user_data)
+        
+        # finf or create profile 
+        await self.profile.get_or_create_profile(user=user)
         
         # generate our token jwt 
         token = create_jwt_token(
