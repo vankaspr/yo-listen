@@ -12,10 +12,11 @@ from fastapi import (
 )
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, desc
+from sqlalchemy.orm import selectinload
 
 from core.database.schemas.user import UserCreate
-from core.database.models import User, RefreshToken, Profile
+from core.database.models import User, RefreshToken, Profile, Post
 
 from utilities.now import get_now_timezone_date
 from utilities.security import hash_password, verify_password
@@ -87,19 +88,21 @@ class UserService:
             return user
         except Exception as e:
             await self.session.rollback()
-            raise error.InternalServerError("Failed registration. Try again later or contact support") from e
-    
+            raise error.InternalServerError(
+                "Failed registration. Try again later or contact support"
+            ) from e
+
     async def request_to_verify(
         self,
         user: User,
     ) -> None:
         """
         In case you need to resend the email verification token
-        
+
         """
         if user.is_verified:
             raise error.LoginAlreadyExist("User already verified")
-        
+
         try:
             # generate token:
             verification_token = await self.generate_verification_token(user_id=user.id)
@@ -117,8 +120,9 @@ class UserService:
             )
         except Exception as e:
             logger.error("Failed to send verification email: ", e)
-            raise error.InternalServerError("Failed to send verification email. Please contact support.") from e
-        
+            raise error.InternalServerError(
+                "Failed to send verification email. Please contact support."
+            ) from e
 
     async def authenticate(
         self,
@@ -421,7 +425,6 @@ class UserService:
         except jwt.InvalidTokenError as e:
             raise error.ErrorToken("Invalid token!") from e
 
-
     async def create_refresh_token(
         self,
         user_id: int,
@@ -537,9 +540,26 @@ class UserService:
     async def get_tranding_users(
         self,
         limit: int = 20,
-    ):
+    ) -> list[User]:
+        """
+        Get users with most published posts
+        """
         try:
-            ...
+            stmt = (
+                select(User)
+                .join(Post, User.id == Post.user_id)
+                .where(
+                    User.is_active == True,
+                    User.is_verified == True,
+                    Post.is_published == True,
+                )
+                .group_by(User.id)
+                .order_by(desc(func.count(Post.id)))
+                .limit(limit)
+                .options(selectinload(User.profile))
+            )
+            result = await self.session.execute(stmt)
+            return result.scalars().all()
         except SQLAlchemyError as e:
             logger.error("Проснись ты обосрался. БД упала: ", e)
             raise error.DataBaseError("Database temporarily unavailable") from e
