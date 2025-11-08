@@ -66,35 +66,59 @@ class UserService:
         # password hashing:
         hashed_password = hash_password(user_data.password)
 
-        # create user:
-        user = User(
-            email=user_data.email,
-            username=user_data.username,
-            hashed_password=hashed_password,
-            is_active=True,
-            is_verified=False,
-            is_superuser=False,
-        )
+        try:
+            # create user:
+            user = User(
+                email=user_data.email,
+                username=user_data.username,
+                hashed_password=hashed_password,
+                is_active=True,
+                is_verified=False,
+                is_superuser=False,
+            )
 
-        self.session.add(user)
-        await self.session.commit()
-        await self.session.refresh(user)
+            self.session.add(user)
+            await self.session.commit()
+            await self.session.refresh(user)
 
-        # generate token:
-        verification_token = await self.generate_verification_token(user.id)
+            # verify email:
+            await self.request_to_verify(user=user)
 
-        # send verification email:
-        await self.after_request_verify(user=user, token=verification_token)
+            return user
+        except Exception as e:
+            await self.session.rollback()
+            raise error.InternalServerError("Failed registration. Try again later or contact support") from e
+    
+    async def request_to_verify(
+        self,
+        user: User,
+    ) -> None:
+        """
+        In case you need to resend the email verification token
+        
+        """
+        if user.is_verified:
+            raise error.LoginAlreadyExist("User already verified")
+        
+        try:
+            # generate token:
+            verification_token = await self.generate_verification_token(user_id=user.id)
 
-        logger.info(
-            """
-            📧 Verification email sent to %r:
-            Token: %r
-            """,
-            user.email,
-            verification_token,
-        )
-        return user
+            # send verification email:
+            await self.after_request_verify(user=user, token=verification_token)
+
+            logger.info(
+                """
+                📧 Verification email sent to %r:
+                Token: %r
+                """,
+                user.email,
+                verification_token,
+            )
+        except Exception as e:
+            logger.error("Failed to send verification email: ", e)
+            raise error.InternalServerError("Failed to send verification email. Please contact support.") from e
+        
 
     async def authenticate(
         self,
@@ -396,6 +420,7 @@ class UserService:
 
         except jwt.InvalidTokenError as e:
             raise error.ErrorToken("Invalid token!") from e
+
 
     async def create_refresh_token(
         self,
