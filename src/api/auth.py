@@ -87,6 +87,21 @@ async def verify_email(
     }
     
 
+@router.post("/resend-verification")
+async def resend_verification(
+    email: str,
+    service: Annotated[
+        UserService,
+        Depends(get_user_service),
+    ],
+):
+    user = await service.get_user_by_email(email=email)
+    await service.request_to_verify(user=user)
+    return {
+        "message": "Verification email sent!"
+    }
+    
+
 @router.post("/logout")
 async def logout(
     user: Annotated[
