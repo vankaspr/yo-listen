@@ -13,7 +13,6 @@ router = APIRouter(
     tags=["Home"],
 )
 
-# TODO: CREATE view for all router
 @router.get("/tranding-posts")
 async def tranding_posts(
     limit: int,
@@ -29,13 +28,16 @@ async def tranding_posts(
     )
 
 @router.get("/tranding-users")
-async def tranding_users():
-    pass
+async def tranding_users(
+    limit: int,
+    service: Annotated[
+        UserService,
+        Depends(get_user_service),
+    ],
+):
+    return await service.get_tranding_users(limit=limit)
 
 
-@router.get("/recent-posts")
-async def recent_posts():
-    pass
 
 @router.get("/stats")
 async def site_stats(
