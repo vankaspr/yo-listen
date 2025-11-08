@@ -34,3 +34,7 @@ class DataBaseError(AppExecption):
     def __init__(self, detail):
         super().__init__(503, detail)
         
+        
+class InternalServerError(AppExecption):
+    def __init__(self, detail):
+        super().__init__(500, detail)
