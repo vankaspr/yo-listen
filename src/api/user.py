@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from typing import Annotated
 from core.database.models import User
-from core.services import ProfileService
+from core.services import ProfileService, PostLikeCommentService
 from core.dependency.user import get_current_user
-from core.dependency.services import get_profile_service
+from core.dependency.services import get_profile_service, get_post_like_comment_service
 from core.config import settings
 from core.database.schemas.profile import BioUpdate, AvatarUpdate
 
@@ -89,3 +89,17 @@ async def update_avatar(
 ):
 
     return await profile_service.update_avatar(user.id, update.avatar)
+
+
+@router.get("/me/profile/liked-post")
+async def user_liked_post(
+    user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        PostLikeCommentService,
+        Depends(get_post_like_comment_service),
+    ],
+):
+    return await service.get_liked_post_by_user(user_id=user.id)
