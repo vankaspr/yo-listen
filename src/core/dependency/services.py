@@ -8,34 +8,25 @@ from core.services import (
     ProfileService,
     OauthService,
     PostLikeCommentService,
+    RecommendationService,
 )
+
+
 async def get_user_service(
     background_task: BackgroundTasks,
-    session: Annotated[
-        AsyncSession,
-        Depends(db_helper.session_getter)
-        ]
+    session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
 ) -> UserService:
-    return UserService(
-        session=session,
-        background_task=background_task
-        )
-    
-    
+    return UserService(session=session, background_task=background_task)
+
+
 async def get_admin_service(
-    session: Annotated[
-        AsyncSession,
-        Depends(db_helper.session_getter)
-    ],
+    session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
 ) -> AdminService:
     return AdminService(session=session)
 
 
 async def get_oauth_service(
-    session: Annotated[
-        AsyncSession,
-        Depends(db_helper.session_getter)
-    ],   
+    session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
 ) -> OauthService:
     return OauthService(session=session)
 
@@ -56,3 +47,12 @@ async def get_post_like_comment_service(
     ],
 ) -> PostLikeCommentService:
     return PostLikeCommentService(session=session)
+
+
+async def get_recommendation_serice(
+    session: Annotated[
+        AsyncSession,
+        Depends(db_helper.session_getter),
+    ],
+) -> RecommendationService:
+    return RecommendationService(session=session)
