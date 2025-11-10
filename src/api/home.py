@@ -1,9 +1,16 @@
 from fastapi import APIRouter, Depends
 from typing import Annotated
 from core.config import settings
-from core.dependency.services import get_post_like_comment_service, get_user_service
+from core.dependency.services import (
+    get_post_like_comment_service,
+    get_user_service,
+    get_recommendation_serice,
+)
+from core.dependency.user import get_current_user
 from core.services.PLC import PostLikeCommentService
 from core.services.user import UserService
+from core.services.recomendation import RecommendationService
+from core.database.models import User
 
 
 router = APIRouter(
@@ -38,6 +45,16 @@ async def tranding_users(
     return await service.get_tranding_users(limit=limit)
 
 
+@router.get("/tranding-tags")
+async def popular_tags(
+    service: Annotated[
+        PostLikeCommentService,
+        Depends(get_post_like_comment_service),
+    ],
+):
+    return await service.get_tranding_tag()
+
+
 @router.get("/stats")
 async def site_stats(
     service: Annotated[PostLikeCommentService, Depends(get_post_like_comment_service)],
@@ -58,7 +75,7 @@ async def site_stats(
     }
 
 
-@router.get("/all-posts")
+@router.get("/debug/all-posts")
 async def all_posts(
     limit: int,
     service: Annotated[
@@ -69,12 +86,15 @@ async def all_posts(
     return await service.get_all_posts(limit=limit)
 
 
-@router.get("/tag-popular")
-async def popular_tags(
-    
+@router.get("/recommendation")
+async def recommendation_posts(
+    user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
     service: Annotated[
-        PostLikeCommentService,
-        Depends(get_post_like_comment_service),
+        RecommendationService,
+        Depends(get_recommendation_serice),
     ],
 ):
-    return await service.get_tranding_tag()
+    return await service.get_recommended_posts(user_id=user.id)
