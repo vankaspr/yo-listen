@@ -46,7 +46,7 @@ async def get_posts(
     return await service.get_all_user_posts(user_id=user.id)
 
 
-@router.get("/{post_id}")
+@router.get("/search/id/{post_id}")
 async def get_post(
     post_id: int,
     user: Annotated[
@@ -59,6 +59,21 @@ async def get_post(
     ],
 ):
     return await service.get_post_by_id(post_id=post_id)
+
+
+@router.get("/search/tag/{tag}")
+async def get_posts_by_tag(
+    tag: str,
+    user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        PostLikeCommentService,
+        Depends(get_post_like_comment_service),
+    ],
+):
+    return await service.get_posts_by_tag(tag=tag)
 
 
 @router.patch("/{post_id}")
