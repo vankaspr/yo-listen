@@ -126,6 +126,21 @@ class PostLikeCommentService:
             "all_posts": len(public_posts) + len(hidden_posts),
         }
 
+    async def get_all_posts(
+        self,
+        limit: int = 100,
+    ) -> list[Post]:
+        """ 
+        Get all posts
+        """
+        try:
+            stmt = select(Post).where(Post.is_published == True).order_by(Post.created_at).limit(limit)
+            result = await self.session.execute(stmt)
+            return result.scalars().all()
+        except SQLAlchemyError as e:
+            raise error.DataBaseError("Database temporarily unavailable") from e
+        
+
     async def _can_manage_post(
         self,
         post_id: int,
@@ -273,6 +288,34 @@ class PostLikeCommentService:
             result = await self.session.execute(stmt)
             return result.scalars().all()
         except SQLAlchemyError as e:
+            raise error.DataBaseError("Database temporarily unavailable") from e
+
+    async def get_tranding_tag(
+        self,
+        limit: int = 20,
+    ) -> list[dict]:
+        """
+        Get most popular tags by post count
+        Returns: list of dicts with tag and post_count
+        """
+        try:
+            stmt = (
+                select(Post.tag, func.count(Post.id).label("post_count"))
+                .where(Post.is_published == True)
+                .group_by(Post.tag)
+                .order_by(desc("post_count"))
+                .limit(limit)
+            )
+
+            result = await self.session.execute(stmt)
+            tags_data = result.all()
+
+            return [
+                {"tag": tag, "post_count": post_count} for tag, post_count in tags_data
+            ]
+
+        except SQLAlchemyError as e:
+            logger.error("Error getting trending tags: %s", e)
             raise error.DataBaseError("Database temporarily unavailable") from e
 
     # ----------------------LIKE -------------------- #
