@@ -222,6 +222,59 @@ class PostLikeCommentService:
         )
         return True
 
+    async def get_liked_post_by_user(
+        self,
+        user_id: int,
+    ) -> list[Post]:
+        """
+        Get all posts that a user has liked
+        """
+        try:
+            stmt = (
+                select(Post)
+                .join(Like, Post.id == Like.post_id)
+                .where(
+                    Like.user_id == user_id,
+                    Post.is_published == True,
+                )
+                .order_by(desc(Like.id))
+                .options(
+                    selectinload(Post.author),
+                )
+            )
+
+            result = await self.session.execute(stmt)
+            return result.scalars().all()
+        except SQLAlchemyError as e:
+            raise error.DataBaseError("Database temporarily unavailable") from e
+
+    async def get_posts_by_tag(
+        self,
+        tag: str,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[Post]:
+        """
+        Found all posts by tag
+        return list of posts
+        """
+        try:
+            stmt = (
+                select(Post)
+                .where(Post.is_published == True, Post.tag == tag)
+                .order_by(desc(Post.created_at))
+                .offset(skip)
+                .limit(limit)
+                .options(
+                    selectinload(Post.author),
+                    selectinload(Post.comments),
+                )
+            )
+            result = await self.session.execute(stmt)
+            return result.scalars().all()
+        except SQLAlchemyError as e:
+            raise error.DataBaseError("Database temporarily unavailable") from e
+
     # ----------------------LIKE -------------------- #
     async def like_post(
         self,
@@ -582,7 +635,7 @@ class PostLikeCommentService:
         return result.scalars().all()
 
     # --------------------- TRAND --------------------------
-    
+
     async def get_tranding_posts_by_likes_count(
         self,
         limit: int = 20,
@@ -594,7 +647,7 @@ class PostLikeCommentService:
         for 30 days that have a large number of likes and comments
         """
         try:
-            
+
             now = get_now_date(days=days)
             stmt = (
                 select(Post)
@@ -616,7 +669,7 @@ class PostLikeCommentService:
         except SQLAlchemyError as e:
             logger.error("Проснись ты обосрался. БД упала: ", e)
             raise error.DataBaseError("Database temporarily unavailable") from e
-        
+
     # --------------------- STATS ------------------------------------
     async def get_all_posts_count(
         self,
@@ -628,7 +681,7 @@ class PostLikeCommentService:
         except SQLAlchemyError as e:
             logger.error("Проснись ты обосрался. БД упала: ", e)
             raise error.DataBaseError("Database temporarily unavailable") from e
-    
+
     async def get_all_comments_count(
         self,
     ) -> int:
@@ -639,4 +692,3 @@ class PostLikeCommentService:
         except SQLAlchemyError as e:
             logger.error("Проснись ты обосрался. БД упала: ", e)
             raise error.DataBaseError("Database temporarily unavailable") from e
-
