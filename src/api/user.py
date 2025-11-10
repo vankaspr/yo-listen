@@ -34,7 +34,6 @@ async def profile(
         Depends(get_profile_service),
     ],
 ):
-    # profile = await profile_service.get_or_create_profile(user=user)
     profile = await profile_service.get_user_profile(user.id)
 
     response_data = {
