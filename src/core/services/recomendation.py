@@ -9,7 +9,6 @@ from core.database.models import (
 )
 
 from exceptions import error
-#from async_lru import alru_cache
 
 
 logger = logging.getLogger(__name__)
@@ -22,7 +21,7 @@ class RecommendationService:
     ):
         self.session = session
 
-    #@alru_cache
+    
     async def get_recommended_posts(
         self,
         user_id: int,
@@ -43,9 +42,8 @@ class RecommendationService:
             )
 
             user_tags_result = await self.session.execute(user_tags_stmt)
-            user_favorite_tags = [tag for tag, count in user_tags_result.all()]
 
-            if user_favorite_tags:
+            if user_favorite_tags := user_tags_result.scalars().all():
                 # If there are any, then we find similar tags, 
                 # excluding those posts that were written by the user himself.
                 stmt = (
@@ -59,7 +57,7 @@ class RecommendationService:
                     .limit(limit)
                     .options(selectinload(Post.author))
                 )
-                logger.info("Recommendation")
+                logger.info("Personalized recommendations based on user tags")
 
             else:
                 # Otherwise, we offer the user popular posts
@@ -70,10 +68,12 @@ class RecommendationService:
                     .limit(limit)
                     .options(selectinload(Post.author))
                 )
-                logger.info("tranding...")
+                logger.info("Fallback to trending posts")
 
             result = await self.session.execute(stmt)
             return result.scalars().all()
+            
+            
         
         except SQLAlchemyError as e:
             logger.error("Error getting recommended posts: %s", e)
