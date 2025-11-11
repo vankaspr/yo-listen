@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from core.database.models.like import Like
     from core.database.models.like_comment import CommentLike
     from core.database.models.post import Post 
+    from core.database.models.notification import Notification
 
 
 class User(Base):
@@ -78,4 +79,11 @@ class User(Base):
         back_populates="following",
         cascade="all, delete-orphan",
         lazy="selectin",
+    )
+    
+    notifications: Mapped[list["Notification"]] = relationship(
+        "Notification",
+        foreign_keys="[Notification.user_id]",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
