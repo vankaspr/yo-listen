@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from typing import Annotated
 from core.config import settings
 from core.dependency.services import (
@@ -55,7 +55,7 @@ async def popular_tags(
     return await service.get_tranding_tag()
 
 
-@router.get("/stats")
+@router.get("/stats-app")
 async def site_stats(
     service: Annotated[PostLikeCommentService, Depends(get_post_like_comment_service)],
     service_user: Annotated[UserService, Depends(get_user_service)],
@@ -74,6 +74,7 @@ async def site_stats(
         "comments": comments,
     }
 
+# --------------------------------
 
 @router.get("/debug/all-posts")
 async def all_posts(
@@ -84,6 +85,8 @@ async def all_posts(
     ],
 ):
     return await service.get_all_posts(limit=limit)
+
+# ---------------------------------------
 
 
 @router.get("/recommendation")
@@ -98,3 +101,26 @@ async def recommendation_posts(
     ],
 ):
     return await service.get_recommended_posts(user_id=user.id)
+
+
+@router.get("/feed")
+async def feed(
+    user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        RecommendationService,
+        Depends(get_recommendation_service),
+    ],
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """ 
+    Following post + recommendation 
+    """
+    return await service.get_user_feed(
+        user_id=user.id,
+        skip=skip,
+        limit=limit,
+    )
