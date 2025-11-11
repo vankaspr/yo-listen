@@ -6,6 +6,7 @@ __all__ = (
     "Like",
     "Comment",
     "CommentLike",
+    "Subscription",
 )
 
 from .user import User
@@ -15,3 +16,4 @@ from .comment import Comment
 from .like import Like
 from .like_comment import CommentLike
 from .post import Post
+from .subscription import Subscription
