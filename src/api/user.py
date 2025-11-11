@@ -112,7 +112,6 @@ async def user_liked_post(
     return await service.get_liked_post_by_user(user_id=user.id)
 
 
-# TODO: doit router for subscribers
 @router.post("/me/subscriptions/subscribe/{following_id}")
 async def subscribe(
     following_id: int,

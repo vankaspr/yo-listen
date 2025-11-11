@@ -1,5 +1,5 @@
 import logging
-from sqlalchemy import select, desc, func, and_
+from sqlalchemy import select, desc, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
