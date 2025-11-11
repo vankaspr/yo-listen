@@ -9,6 +9,7 @@ from core.services import (
     OauthService,
     PostLikeCommentService,
     RecommendationService,
+    SubscriptionService,
 )
 
 
@@ -49,10 +50,20 @@ async def get_post_like_comment_service(
     return PostLikeCommentService(session=session)
 
 
-async def get_recommendation_serice(
+
+async def get_recommendation_service(
     session: Annotated[
         AsyncSession,
         Depends(db_helper.session_getter),
     ],
 ) -> RecommendationService:
     return RecommendationService(session=session)
+
+
+async def get_subscription_service(
+    session: Annotated[
+        AsyncSession,
+        Depends(db_helper.session_getter),
+    ],
+) -> SubscriptionService:
+    return SubscriptionService(session=session)
