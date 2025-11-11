@@ -3,6 +3,7 @@ from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.services.user import UserService
+from core.services.base import BaseService
 from core.services.profile import ProfileService
 from core.services.PLC import PostLikeCommentService
 from utilities.now import get_now_date
@@ -15,7 +16,7 @@ from exceptions import error
 logger = logging.getLogger(__name__)
 
 
-class AdminService:
+class AdminService(BaseService):
     """
     Service for the admin and all
     the auxiliary functions that
@@ -26,7 +27,7 @@ class AdminService:
         self,
         session: AsyncSession,
     ):
-        self.session = session
+        super().__init__(session=session)
         self.user_service = UserService(session)
         self.profile_service = ProfileService(session)
         self.plc_service = PostLikeCommentService(session)
