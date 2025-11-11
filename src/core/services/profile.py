@@ -2,15 +2,19 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database.models import User, Profile
+from core.services.base import BaseService
 from exceptions import error
 
 
 logger = logging.getLogger(__name__)
 
 
-class ProfileService:
+class ProfileService(BaseService):
+    """ 
+    
+    """
     def __init__(self, session: AsyncSession):
-        self.session = session
+        super().__init__(session=session)
         
     async def get_user_profile(
         self,

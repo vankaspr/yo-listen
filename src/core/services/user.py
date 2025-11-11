@@ -14,7 +14,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
 from sqlalchemy.orm import selectinload
-
+from core.services.base import BaseService
 from core.database.schemas.user import UserCreate
 from core.database.models import User, RefreshToken, Profile, Post
 
@@ -32,20 +32,21 @@ from core.mailing import (
 )
 
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class UserService:
+class UserService(BaseService):
     """
     Service related to users:
     creation, validation, login, etc.
     """
 
     def __init__(
-        self, session: AsyncSession, background_task: Optional[BackgroundTasks] = None
+        self,
+        session: AsyncSession,
+        background_task: Optional[BackgroundTasks] = None,
     ):
-        self.session = session
+        super().__init__(session=session)
         self.background_task = background_task
 
     async def create_user(self, user_data: UserCreate) -> User:

@@ -3,6 +3,7 @@ from sqlalchemy import select, update, delete, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import joinedload, selectinload
+from core.services.base import BaseService
 from core.database.models import (
     Post,
     Like,
@@ -17,9 +18,12 @@ from exceptions import error
 logger = logging.getLogger(__name__)
 
 
-class PostLikeCommentService:
+class PostLikeCommentService(BaseService):
+    """ 
+    
+    """
     def __init__(self, session: AsyncSession):
-        self.session = session
+        super().__init__(session=session)
 
     # --------------- POST -------------------- #
     async def create_post(

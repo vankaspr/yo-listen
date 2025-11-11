@@ -7,6 +7,7 @@ from core.database.models import (
     Post,
     Like,
 )
+from core.services.base import BaseService
 
 from exceptions import error
 
@@ -14,12 +15,15 @@ from exceptions import error
 logger = logging.getLogger(__name__)
 
 
-class RecommendationService:
+class RecommendationService(BaseService):
+    """ 
+    
+    """
     def __init__(
         self,
         session: AsyncSession,
     ):
-        self.session = session
+        super().__init__(session=session)
 
     
     async def get_recommended_posts(

@@ -9,16 +9,17 @@ from core.database.models import User
 from utilities.jwt_token import create_jwt_token
 from exceptions import error
 from core.config import settings
+from core.services.base import BaseService
 
 logger = logging.getLogger(__name__)
 
-class OauthService:
+class OauthService(BaseService):
     """ 
     A service for authentication using 
     third-party services (specifically GitHub).
     """
     def __init__(self, session: AsyncSession):
-        self.session = session
+        super().__init__(session=session)
         self.user_service = UserService(session)
         self.profile = ProfileService(session)
         
