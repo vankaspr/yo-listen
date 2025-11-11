@@ -5,6 +5,7 @@ __all__ = (
     "ProfileService",
     "PostLikeCommentService",
     "RecommendationService",
+    "SubscriptionService",
 )
 
 from .admin import AdminService
@@ -13,3 +14,4 @@ from .oauth import OauthService
 from .profile import ProfileService
 from .PLC import PostLikeCommentService
 from .recomendation import RecommendationService
+from .subscription import SubscriptionService
