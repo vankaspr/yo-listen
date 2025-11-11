@@ -4,7 +4,7 @@ from core.config import settings
 from core.dependency.services import (
     get_post_like_comment_service,
     get_user_service,
-    get_recommendation_serice,
+    get_recommendation_service,
 )
 from core.dependency.user import get_current_user
 from core.services.PLC import PostLikeCommentService
@@ -94,7 +94,7 @@ async def recommendation_posts(
     ],
     service: Annotated[
         RecommendationService,
-        Depends(get_recommendation_serice),
+        Depends(get_recommendation_service),
     ],
 ):
     return await service.get_recommended_posts(user_id=user.id)
