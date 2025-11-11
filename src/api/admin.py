@@ -1,13 +1,19 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from typing import Annotated
 
 from core.config import settings
 from core.database.models import User
-from core.services import AdminService, PostLikeCommentService
+from core.services import (
+    AdminService,
+    PostLikeCommentService,
+    SubscriptionService,
+)
 from core.dependency.admin import get_current_superuser
+
 from core.dependency.services import (
     get_admin_service,
     get_post_like_comment_service,
+    get_subscription_service,
 )
 
 router = APIRouter(prefix=settings.api.admin, tags=["Admin"])
@@ -17,7 +23,7 @@ router = APIRouter(prefix=settings.api.admin, tags=["Admin"])
 
 @router.get("/statistic/users")
 async def statistics(
-    user: Annotated[
+    current_user: Annotated[
         User,
         Depends(get_current_superuser),
     ],
@@ -32,7 +38,7 @@ async def statistics(
 @router.get("/statistic/users/new/{days}")
 async def statistic_of_new_users(
     days: int,
-    user: Annotated[
+    current_user: Annotated[
         User,
         Depends(get_current_superuser),
     ],
@@ -47,7 +53,7 @@ async def statistic_of_new_users(
 @router.get("/statistic/users/all/unverified/{days}")
 async def unverified_statistic(
     days: int,
-    user: Annotated[
+    current_user: Annotated[
         User,
         Depends(get_current_superuser),
     ],
@@ -61,7 +67,7 @@ async def unverified_statistic(
 
 @router.get("/statistic/users/all/good")
 async def all_good_users(
-    user: Annotated[
+    current_user: Annotated[
         User,
         Depends(get_current_superuser),
     ],
@@ -76,7 +82,7 @@ async def all_good_users(
 @router.get("/info/{user_id}")
 async def full_info_about_user(
     user_id: int,
-    superuser: Annotated[
+    current_user: Annotated[
         User,
         Depends(get_current_superuser),
     ],
@@ -94,7 +100,7 @@ async def full_info_about_user(
 @router.patch("/deactivate/{user_id}")
 async def deactivate_user(
     user_id: int,
-    user: Annotated[
+    current_user: Annotated[
         User,
         Depends(get_current_superuser),
     ],
@@ -109,7 +115,7 @@ async def deactivate_user(
 @router.patch("/reactivate/{user_id}")
 async def reactivate_user(
     user_id: int,
-    user: Annotated[
+    current_user: Annotated[
         User,
         Depends(get_current_superuser),
     ],
@@ -124,7 +130,7 @@ async def reactivate_user(
 @router.delete("/delete/user/{user_id}")
 async def delete_user(
     user_id: int,
-    user: Annotated[
+    current_user: Annotated[
         User,
         Depends(get_current_superuser),
     ],
@@ -164,3 +170,73 @@ async def delete_comment(
     ],
 ):
     return await service.delete_comment(user_id=user.id, comment_id=comment_id)
+
+
+# --------------------------------------------------------------------------
+@router.get("/users/{user_id}/followers")
+async def get_user_followers(
+    user_id: int,
+    current_user: Annotated[
+        User,
+        Depends(get_current_superuser),
+    ],
+    service: Annotated[
+        SubscriptionService,
+        Depends(get_subscription_service),
+    ],
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """
+    Get followers of a specific user 
+    """
+    return await service.get_user_followers(
+        user_id=user_id,
+        skip=skip,
+        limit=limit,
+    )
+
+
+@router.get("/users/{user_id}/following")
+async def get_user_followers(
+    user_id: int,
+    current_user: Annotated[
+        User,
+        Depends(get_current_superuser),
+    ],
+    service: Annotated[
+        SubscriptionService,
+        Depends(get_subscription_service),
+    ],
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """
+    Get followers of a specific user 
+    """
+    return await service.get_user_following(
+        user_id=user_id,
+        skip=skip,
+        limit=limit,
+    )
+    
+
+@router.get("/users/{user_id}/follow-stats")
+async def get_user_followers(
+    user_id: int,
+    current_user: Annotated[
+        User,
+        Depends(get_current_superuser),
+    ],
+    service: Annotated[
+        SubscriptionService,
+        Depends(get_subscription_service),
+    ],
+):
+    """
+    Get followers of a specific user 
+    """
+    return await service.get_subscriptions_stats(
+        user_id=user_id
+    )
+
