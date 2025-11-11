@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class SubscriptionService(BaseService):
+    """ 
+    Subscription management service
+    """
     def __init__(
         self,
         session: AsyncSession,

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class ProfileService(BaseService):
     """ 
-    
+    Service for working with user profiles
     """
     def __init__(self, session: AsyncSession):
         super().__init__(session=session)

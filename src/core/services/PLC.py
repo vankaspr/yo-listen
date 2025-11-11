@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class PostLikeCommentService(BaseService):
     """ 
-    
+    A service for managing posts, likes, comments, and likes on comments
     """
     def __init__(self, session: AsyncSession):
         super().__init__(session=session)

@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class RecommendationService(BaseService):
     """ 
-    
+    Service for working with recommendations
     """
     def __init__(
         self,
