@@ -15,7 +15,10 @@ from core.dependency.services import (
 from core.config import settings
 from core.database.schemas.profile import BioUpdate, AvatarUpdate
 
-router = APIRouter(prefix=settings.api.user, tags=["User"])
+router = APIRouter(
+    prefix=settings.api.user,
+    tags=["User"],
+)
 
 
 @router.get("/me")
