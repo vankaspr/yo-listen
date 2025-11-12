@@ -10,6 +10,7 @@ from core.services import (
     PostLikeCommentService,
     RecommendationService,
     SubscriptionService,
+    NotificationService,
 )
 
 
@@ -42,13 +43,16 @@ async def get_profile_service(
 
 
 async def get_post_like_comment_service(
+    background_task: BackgroundTasks,
     session: Annotated[
         AsyncSession,
         Depends(db_helper.session_getter),
     ],
 ) -> PostLikeCommentService:
-    return PostLikeCommentService(session=session)
-
+    return PostLikeCommentService(
+        session=session,
+        background_task=background_task,
+    )
 
 
 async def get_recommendation_service(
@@ -67,3 +71,12 @@ async def get_subscription_service(
     ],
 ) -> SubscriptionService:
     return SubscriptionService(session=session)
+
+
+async def get_notification_service(
+    session: Annotated[
+        AsyncSession,
+        Depends(db_helper.session_getter),
+    ],
+) -> NotificationService:
+    return NotificationService(session=session)
