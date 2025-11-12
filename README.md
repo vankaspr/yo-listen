@@ -1,3 +1,6 @@
+# App
+
+
 ## 🤠 Possibilities:
 
 - Home router (guest handles + secure handles)
@@ -19,3 +22,28 @@
 - PostgreSQL
 - Poetry
 - Docker
+
+
+## Quick start
+
+```
+git clone https://github.com/vankaspr/yo-listen.git
+cd yo-listen
+
+# database & docker settings:
+cp .env.example.docker .env.docker
+
+cd src
+cp .env.example .env
+
+# install dependencies
+poetry install
+
+# run docker-compose
+docker-compose up -d
+
+# run
+poetry run python -m main
+```
+
+
