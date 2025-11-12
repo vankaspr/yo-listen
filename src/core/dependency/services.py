@@ -65,12 +65,16 @@ async def get_recommendation_service(
 
 
 async def get_subscription_service(
+    background_task: BackgroundTasks,
     session: Annotated[
         AsyncSession,
         Depends(db_helper.session_getter),
     ],
 ) -> SubscriptionService:
-    return SubscriptionService(session=session)
+    return SubscriptionService(
+        session=session,
+        background_task=background_task,
+    )
 
 
 async def get_notification_service(
