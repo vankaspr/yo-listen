@@ -1,4 +1,6 @@
 import logging
+from typing import Optional
+from fastapi import BackgroundTasks
 from sqlalchemy import select, desc, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,6 +9,7 @@ from core.services.base import BaseService
 from core.services.user import UserService
 from core.database.models import Subscription, User
 from exceptions import error
+from core.services.notification import _create_notification
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +21,11 @@ class SubscriptionService(BaseService):
     def __init__(
         self,
         session: AsyncSession,
+        background_task: Optional[BackgroundTasks] = None,
     ):
         super().__init__(session=session)
         self.user_service = UserService(session=session)
+        self.background_task = background_task
 
     async def _subscription_already_exists(
         self,
@@ -105,10 +110,19 @@ class SubscriptionService(BaseService):
                 follower_id,
                 following_id,
             )
+            
+            # create notification
+            self.background_task.add_task(
+                _create_notification,
+                following_id,
+                follower_id,
+                type="new_follower"
+            )
 
             return subscription
 
         except (error.NotAllowed, error.NotFound):
+            await self.session.rollback()
             raise
         except SQLAlchemyError as e:
             await self.session.rollback()
