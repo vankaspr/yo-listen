@@ -15,7 +15,6 @@ class NotificationService(BaseService):
     def __init__(self, session: AsyncSession):
         super().__init__(session)
 
-    # TODO: update NotificationService
     async def create_notification(
         self,
         user_id: int,
