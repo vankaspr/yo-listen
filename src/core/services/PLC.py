@@ -1,9 +1,12 @@
 import logging
+from typing import Optional
+from fastapi import BackgroundTasks
 from sqlalchemy import select, update, delete, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import joinedload, selectinload
 from core.services.base import BaseService
+from core.services.notification import _create_notification
 from core.database.models import (
     Post,
     Like,
@@ -11,6 +14,7 @@ from core.database.models import (
     CommentLike,
     User,
 )
+
 from utilities.now import get_now_date
 
 from exceptions import error
@@ -19,11 +23,18 @@ logger = logging.getLogger(__name__)
 
 
 class PostLikeCommentService(BaseService):
-    """ 
+    """
     A service for managing posts, likes, comments, and likes on comments
     """
-    def __init__(self, session: AsyncSession):
+
+    def __init__(
+        self,
+        session: AsyncSession,
+        background_task: Optional[BackgroundTasks] = None,
+    ):
         super().__init__(session=session)
+        self.background_task = background_task
+        # self.notification_service = NotificationService(session=session)
 
     # --------------- POST -------------------- #
     async def create_post(
@@ -134,16 +145,20 @@ class PostLikeCommentService(BaseService):
         self,
         limit: int = 100,
     ) -> list[Post]:
-        """ 
+        """
         Get all posts
         """
         try:
-            stmt = select(Post).where(Post.is_published == True).order_by(Post.created_at).limit(limit)
+            stmt = (
+                select(Post)
+                .where(Post.is_published == True)
+                .order_by(Post.created_at)
+                .limit(limit)
+            )
             result = await self.session.execute(stmt)
             return result.scalars().all()
         except SQLAlchemyError as e:
             raise error.DataBaseError("Database temporarily unavailable") from e
-        
 
     async def _can_manage_post(
         self,
@@ -332,6 +347,10 @@ class PostLikeCommentService(BaseService):
         Create like on post
         """
         try:
+            post = await self.get_post_by_id(post_id=post_id)
+            if not post:
+                raise error.NotFound("Post not found")
+
             like = Like(
                 user_id=user_id,
                 post_id=post_id,
@@ -347,6 +366,15 @@ class PostLikeCommentService(BaseService):
 
             await self.session.commit()
             await self.session.refresh(like)
+
+            ## create notification
+            # if post.user_id != user_id:
+            #    await self.notification_service.create_notification(
+            #        user_id=post.user_id,
+            #        action_by_id=user_id,
+            #        related_to_id=post_id,
+            #        type="like_post"
+            #    )
 
             return like
         except IntegrityError as e:
@@ -437,6 +465,10 @@ class PostLikeCommentService(BaseService):
         Create like on comment
         """
         try:
+            comment = await self.get_comment_by_id(comment_id=comment_id)
+            if not comment:
+                raise error.NotFound("Comment not found")
+
             comment_like = CommentLike(
                 user_id=user_id,
                 comment_id=comment_id,
@@ -451,6 +483,15 @@ class PostLikeCommentService(BaseService):
 
             await self.session.commit()
             await self.session.refresh(comment_like)
+
+            ## create notification
+            # if comment.user_id != user_id:
+            #    await self.notification_service.create_notification(
+            #        user_id=comment.user_id,
+            #        action_by_id=user_id,
+            #        related_to_id=comment_id,
+            #        type="like_comment",
+            #    )
 
             return comment_like
 
@@ -547,25 +588,52 @@ class PostLikeCommentService(BaseService):
         content: str,
     ) -> Comment:
 
-        self._validate_comment_content(content)
+        try:
+            post = await self.get_post_by_id(post_id=post_id)
+            if not post:
+                raise error.NotFound("Posst not found")
 
-        comment = Comment(
-            user_id=user_id,
-            post_id=post_id,
-            content=content.strip(),
-        )
-        self.session.add(comment)
+            self._validate_comment_content(content)
 
-        # comment counter
-        await self._update_post_comment_count(
-            post_id=post_id,
-            increment=True,
-        )
+            comment = Comment(
+                user_id=user_id,
+                post_id=post_id,
+                content=content.strip(),
+            )
+            self.session.add(comment)
 
-        await self.session.commit()
-        await self.session.refresh(comment)
+            # comment counter
+            await self._update_post_comment_count(
+                post_id=post_id,
+                increment=True,
+            )
 
-        return comment
+            await self.session.commit()
+            await self.session.refresh(comment)
+
+            # TODO: NOTIFICATION
+            if post.user_id != user_id:
+                self.background_task.add_task(
+                    _create_notification,
+                    post.user_id, user_id, "new_comment", post_id
+                )
+            #    try:
+            #        async with db_helper.session_getter as new_session:
+            #            notification_service = NotificationService(new_session)
+            #            notification = await notification_service.create_notification(
+            #                user_id=post.user_id,
+            #                action_by_id=user_id,
+            #                related_to_id=post_id,
+            #                type="new_comment"
+            #            )
+            #            logger.info(f"Notification created with new session: {notification.id}")
+            #    except Exception as err:
+            #        logger.error(f"Notification with new session also failed: {err}")
+
+            return comment
+        except SQLAlchemyError as e:
+            await self.session.rollback()
+            raise error.DataBaseError("Database temporary unvaible") from e
 
     async def get_comment_by_id(
         self,
