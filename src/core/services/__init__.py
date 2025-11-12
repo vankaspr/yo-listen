@@ -6,6 +6,7 @@ __all__ = (
     "PostLikeCommentService",
     "RecommendationService",
     "SubscriptionService",
+    "NotificationService"
 )
 
 from .admin import AdminService
@@ -15,3 +16,4 @@ from .profile import ProfileService
 from .PLC import PostLikeCommentService
 from .recomendation import RecommendationService
 from .subscription import SubscriptionService
+from .notification import NotificationService
