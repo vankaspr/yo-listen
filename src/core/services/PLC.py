@@ -34,7 +34,7 @@ class PostLikeCommentService(BaseService):
     ):
         super().__init__(session=session)
         self.background_task = background_task
-        # self.notification_service = NotificationService(session=session)
+        
 
     # --------------- POST -------------------- #
     async def create_post(
@@ -367,14 +367,12 @@ class PostLikeCommentService(BaseService):
             await self.session.commit()
             await self.session.refresh(like)
 
-            ## create notification
-            # if post.user_id != user_id:
-            #    await self.notification_service.create_notification(
-            #        user_id=post.user_id,
-            #        action_by_id=user_id,
-            #        related_to_id=post_id,
-            #        type="like_post"
-            #    )
+            # create notification
+            if post.user_id != user_id:
+                self.background_task.add_task(
+                    _create_notification,
+                    post.user_id, user_id, "like_post", post_id
+                )
 
             return like
         except IntegrityError as e:
@@ -484,14 +482,12 @@ class PostLikeCommentService(BaseService):
             await self.session.commit()
             await self.session.refresh(comment_like)
 
-            ## create notification
-            # if comment.user_id != user_id:
-            #    await self.notification_service.create_notification(
-            #        user_id=comment.user_id,
-            #        action_by_id=user_id,
-            #        related_to_id=comment_id,
-            #        type="like_comment",
-            #    )
+            # create notification
+            if comment.user_id != user_id:
+                self.background_task.add_task(
+                    _create_notification,
+                    comment.user_id, user_id, "like_comment", comment_id
+                )
 
             return comment_like
 
@@ -617,18 +613,6 @@ class PostLikeCommentService(BaseService):
                     _create_notification,
                     post.user_id, user_id, "new_comment", post_id
                 )
-            #    try:
-            #        async with db_helper.session_getter as new_session:
-            #            notification_service = NotificationService(new_session)
-            #            notification = await notification_service.create_notification(
-            #                user_id=post.user_id,
-            #                action_by_id=user_id,
-            #                related_to_id=post_id,
-            #                type="new_comment"
-            #            )
-            #            logger.info(f"Notification created with new session: {notification.id}")
-            #    except Exception as err:
-            #        logger.error(f"Notification with new session also failed: {err}")
 
             return comment
         except SQLAlchemyError as e:
