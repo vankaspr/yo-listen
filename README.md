@@ -1,40 +1,21 @@
-# BARE MINIMUM FOR AUTH FASTAPI
+## 🤠 Possibilities:
 
-## 📋 Opportunities:
+- Home router (guest handles + secure handles)
+- Feed (following + recomendation based on liked post)
+- Full authentication, including sending an email for verification
+- User and profile, + the ability to subscribe and view these subscriptions
+- Posts, likes, and comments (create, edit, delete, statistics)
+- Notification on create like, create comment like, create comment ando create subscribe
+- Admin router (separate dependency for the superuser): statistics for the user, users, posts, subscriptions, etc., as well as dangerous actions directly related to deletion 
+- Documentation from fastapi **/docs**
 
-- Register by username or email
-- Login w/ access and refresh token's
-- Jinja templates 
-- Forgot & reset password 
-- Oauth: github 
-- User profile
-- Admin section: statistics ando user-action
-
-## 🛠️ Technologies used:
+## Technologies:
 
 - Python 3.12
 - FastAPI
+- Jinja 2
 - SQLAlchemy
 - Alembic
 - PostgreSQL
-- Poetry 
+- Poetry
 - Docker
-
-
-## 🚀 Quick start:
-
-```
-git clone https://github.com/vankaspr/bare-minimum-for-auth-app.git
-cd bare-minimum-for-auth-app
-
-# env file 
-cp .env.docker.example .env.docker
-cp .env.example .env
-
-# install dependencies
-poetry install 
-
-# run 
-poetry run python src/main.py
-
-```
