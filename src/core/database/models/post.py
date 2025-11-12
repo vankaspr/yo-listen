@@ -1,8 +1,12 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 from core.database import Base
 from sqlalchemy import String, Boolean, DateTime, func, Integer, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+if TYPE_CHECKING:
+    from core.database.models.user import User
+    from core.database.models.like import Like
+    from core.database.models.comment import Comment
 
 class Post(Base):
     __tablename__ = "posts"

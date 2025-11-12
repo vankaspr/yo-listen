@@ -1,6 +1,9 @@
 from core.database import Base
 from sqlalchemy import String, Integer, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from core.database.models.user import User
 
 class Profile(Base):
     __tablename__ = "profiles"

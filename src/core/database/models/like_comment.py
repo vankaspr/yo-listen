@@ -1,7 +1,10 @@
 from core.database import Base
+from typing import TYPE_CHECKING
 from sqlalchemy import Integer, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+if TYPE_CHECKING:
+    from core.database.models.user import User
+    from core.database.models.comment import Comment
 class CommentLike(Base):
     __tablename__ = "comment_likes"
     
