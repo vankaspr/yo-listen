@@ -1,16 +1,18 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from typing import Annotated
 from core.database.models import User
 from core.services import (
     ProfileService,
     PostLikeCommentService,
     SubscriptionService,
+    NotificationService,
 )
 from core.dependency.user import get_current_user
 from core.dependency.services import (
     get_profile_service,
     get_post_like_comment_service,
     get_subscription_service,
+    get_notification_service,
 )
 from core.config import settings
 from core.database.schemas.profile import BioUpdate, AvatarUpdate
@@ -214,4 +216,32 @@ async def unsubscribe(
     return await service.delete_subsription(
         follower_id=user.id,
         following_id=following_id,
+    )
+
+
+@router.get("/me/notification")
+async def notification(
+    user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    service: Annotated[
+        NotificationService,
+        Depends(get_notification_service),
+    ],
+    skip: int = Query(
+        0, ge=0, description="Number of notifications to skip"
+    ),  
+    limit: int = Query(
+        20, ge=1, le=100, description="Number of notifications to return"
+    ),  
+    unread_only: bool = Query(
+        False, description="Show only unread notifications"
+    ),  
+):
+    return await service.get_user_notifications(
+        user_id=user.id,
+        skip=skip,
+        limit=limit,
+        unread_only=unread_only,
     )
